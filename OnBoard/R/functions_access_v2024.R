@@ -614,6 +614,7 @@ function3_benthos=function(xdat, xdat_benthos,
     dplyr::mutate(MatStage=ifelse(nchar(MatStage)<3,NA,MatStage))
   bio_data_trust$'L(mm)'[bio_data_trust$'L(mm)'==0]<--1
   bio_data_trust$'W(g)'[bio_data_trust$'W(g)'==0]<--1
+  bio_data_trust$'W(g)'=ifelse(is.na(bio_data_trust$'W(g)'), -1,bio_data_trust$'W(g)')
   bio_data_trust$Oth=ifelse(is.na(bio_data_trust$Oth), 0,1)
   if(haul==18 & survey=='SOLEMON2021'){
     bio_data_trust[bio_data_trust$SpecCode=='SOLEVUL'&!is.na(bio_data_trust$FishID),]$FishID=NA

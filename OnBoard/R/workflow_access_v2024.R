@@ -17,7 +17,7 @@ rm(list = ls())
 #               ifelse(Sys.info()[['user']]=="e.armelloni", "C:/Users/e.armelloni/OneDrive/Lezioni/Lavoro#/Solemon/github/SoleMon_project/OnBoard", 
 #                      ifelse(Sys.info()[['user']]=="Franc", "C:/Users/Franc/OneDrive/Desktop/solemon/2022#/raccolta_dati", NA))) 
 #
-main_wd='C:/Users/e.armelloni/OneDrive/Lezioni/Lavoro/Solemon/AtSeaData/2024/OnBoard_2024_ENA'
+main_wd="C:/Users/a.palermino/OneDrive - CNR/Assegno Scarcella/Solemon/Solemon 2024/OnBoard"
 setwd(main_wd)
 source('R/functions_access_v2024.R')
 
@@ -26,7 +26,7 @@ unique(target_species$species_name) # these are the species for which you collec
 shells  # these are the species for which you collect total weight and total number 
 unique(haul_order$haul)
 # set parameters
-haul='55' # single haul OR 'all'
+haul='all' # single haul OR 'all'
 db='2024_ENA' # to be specified only for single hauls
 updateID='N'
 area_sepia='D'
@@ -53,11 +53,11 @@ haul.info[,2:6]=apply(haul.info[,2:6],2,as.numeric)
 names(haul.info)=c('Station','rapiA_kg', 'rapiA_tara','rapiD_kg', 'rapiD_tara', 'benthos_kg','litter_kg')
 haul.info=haul.info%>%replace(is.na(.),0)
 
-lw.mcmc=read_csv("data/post_dist_all_species.csv")
+lw.mcmc=read.csv("data/post_dist_all_species.csv")
 
 # multi-haul applications ####
 hauls.need=get_tables(complete = T)
-xhaul=51
+xhaul=49
 
 for(xhaul in 1:length(hauls.need)){
   cat(xhaul)

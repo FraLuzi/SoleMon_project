@@ -5,19 +5,19 @@ library(dplyr)
 library(magrittr)
 library(ggplot2)
 
-target.dir='C:/Users/e.armelloni/OneDrive/Lezioni/Lavoro/Solemon/AtSeaData/2024/OnBoard_2024_ENA'
+target.dir="C:/Users/a.palermino/OneDrive - CNR/Assegno Scarcella/Solemon/Solemon 2024/OnBoard"
 
 ### catch sample data ####
 '%ni%'=Negate('%in%')
 setwd(file.path(target.dir, "output/trust/catch_sample"))
-target.list=read_excel("C:/Users/e.armelloni/OneDrive/Lezioni/Lavoro/Solemon/AtSeaData/2024/OnBoard_2024_ENA/data/target_species.xlsx")
+target.list=read_excel("C:/Users/a.palermino/OneDrive - CNR/Assegno Scarcella/Solemon/Solemon 2024/OnBoard/data/target_species.xlsx")
 xfiles=list.files()
 dat_store=NA
 for(k in 1:length(xfiles)){
   dat_store=rbind(dat_store,read_excel(xfiles[k]) )
 }
-dat_store=dat_store[!is.na(dat_store$Survey),]
-writexl::write_xlsx(dat_store, "../upload/CatchSample_data.xlsx")
+dat_store=dat_store[!is.na(dat_store$Survey),]%>%filter(Station!="test")
+writexl::write_xlsx(dat_store, "CatchSample_data.xlsx")
 
 
 # Catch file ####
@@ -33,8 +33,8 @@ for(k in 1:length(xfiles)){
   #names(dat_store)[9]='RaisF'
 }
 
-dat_store=dat_store[!is.na(dat_store$Survey),]
-writexl::write_xlsx(dat_store, "../upload/Catch_data.xlsx")
+dat_store=dat_store[!is.na(dat_store$Survey),]%>%filter(Station!="test")
+writexl::write_xlsx(dat_store, "Catch_data.xlsx")
 
 names(dat_store)[7]='w_kg'
 
@@ -106,7 +106,7 @@ n.check=mean_n[mean_n$Code %in% target.list$species_name,]%>%
   arrange(test)
 n.check=n.check[n.check$test>1.5|n.check$test<0.5,]
 
-writexl::write_xlsx(wrong.names, "../../edits/suspicious_n.xlsx")
+writexl::write_xlsx(n.check, "../../edits/suspicious_n.xlsx")
 
 n.check%>%
   pivot_longer(-c(Station, Code, test,tot))%>%
@@ -125,8 +125,8 @@ ggplot(data=mean_n[mean_n$Code %in% target.list$species_name,])+
 ### Bio data ####
 rm(list = ls())
 '%ni%'=Negate('%in%')
-setwd("C:/Users/e.armelloni/OneDrive/Lezioni/Lavoro/Solemon/AtSeaData/2024/OnBoard_2024_ENA/output/trust/bio")
-target.dir='C:/Users/e.armelloni/OneDrive/Lezioni/Lavoro/Solemon/AtSeaData/2024/OnBoard_2024_ENA'
+setwd("C:/Users/a.palermino/OneDrive - CNR/Assegno Scarcella/Solemon/Solemon 2024/OnBoard/output/trust/bio")
+target.dir="C:/Users/a.palermino/OneDrive - CNR/Assegno Scarcella/Solemon/Solemon 2024/OnBoard"
 lw_pars=read_excel("../../../data/lw_pars.xlsx")
 names(lw_pars)[c(1,2)]=c('SpecCode', 'Sex')
 
@@ -136,8 +136,8 @@ dat_store=NA
 for(k in 1:length(xfiles)){
   dat_store=rbind(dat_store,read_excel(xfiles[k]) )
 }
-dat_store=dat_store[!is.na(dat_store$Survey),]
-writexl::write_xlsx(dat_store, "../upload/Bio_data.xlsx")
+dat_store=dat_store[!is.na(dat_store$Survey),]%>%filter(Station!="test")
+writexl::write_xlsx(dat_store, "Bio_data.xlsx")
 
 names(dat_store)[9]='w_g'
 names(dat_store)[8]='l_mm'
@@ -163,11 +163,18 @@ lfd.np%>%ggplot()+
   geom_col(aes(x=l_st, y=n))+
   facet_wrap(~SpecCode, scales='free')
 
-# check suspicious
-dat_store[dat_store$SpecCode=='ARNOLAT'&dat_store$l_mm<70,] # this needs to be adapted to check species that are suspicious in the previous plot
-dat_store[dat_store$SpecCode=='GOBINIG'&dat_store$l_mm<50,] # this needs to be adapted to check species that are suspicious in the previous plot
-dat_store[dat_store$SpecCode=='BUGLLUT'&dat_store$l_mm>140,] # this needs to be adapted to check species that are suspicious in the previous plot
+# check suspicious ### adjust better the code
+dat_ARNOLAT<-dat_store[dat_store$SpecCode=='ARNOLAT'&dat_store$l_mm<70,] # this needs to be adapted to check species that are suspicious in the previous plot
+dat_GOBINIG<-dat_store[dat_store$SpecCode=='GOBINIG'&dat_store$l_mm<50,] # this needs to be adapted to check species that are suspicious in the previous plot
+dat_BUGGLUT<-dat_store[dat_store$SpecCode=='BUGLLUT'&dat_store$l_mm>140,] # this needs to be adapted to check species that are suspicious in the previous plot
+dat_SERAHEP<-dat_store[dat_store$SpecCode=='SERAHEP'&dat_store$l_mm<60,] # this needs to be adapted to check species that are suspicious in the previous plot
+dat_DIPLANN<-dat_store[dat_store$SpecCode=='DIPLANN'&dat_store$l_mm>180,] # this needs to be adapted to check species that are suspicious in the previous plot
+dat_SEPIELE<-dat_store[dat_store$SpecCode=='SEPIELE'&dat_store$l_mm<20,] # this needs to be adapted to check species that are suspicious in the previous plot
+dat_MELIKER<-dat_store[dat_store$SpecCode=='MELIKER',] # this needs to be adapted to check species that are suspicious in the previous plot
+dat_n_non_target<-rbind(dat_ARNOLAT,dat_GOBINIG,dat_BUGGLUT,dat_SERAHEP,dat_DIPLANN,dat_SEPIELE)%>%
+  filter(Survey!=is.na(Survey))
 
+writexl::write_xlsx(dat_n_non_target, "../../edits/suspicious_n_nontarget.xlsx")
 
 # lw priority
 ggplot(data=dat_store%>%
@@ -176,13 +183,13 @@ ggplot(data=dat_store%>%
   facet_wrap(~SpecCode, scales='free')
 
 # bayesian LW
-lw.mcmc=read_csv("C:/Users/e.armelloni/OneDrive/Lezioni/Lavoro/Solemon/AtSeaData/2024/OnBoard_2024_ENA/data/post_dist_all_species.csv")
+lw.mcmc=read_csv("C:/Users/a.palermino/OneDrive - CNR/Assegno Scarcella/Solemon/Solemon 2024/OnBoard/data/post_dist_all_species.csv")
 
 
-target.species='AEQUOPE' # select species
+target.species='CALLSAP' # select species
 
 posterior_dist=lw.mcmc[lw.mcmc$specie==target.species,]
-dat.species=dat_store[dat_store$SpecCode==target.species,]
+dat.species=dat_store[dat_store$SpecCode==target.species,]%>%filter(Survey!=is.na(Survey))
 dat.species$lo.ci=dat.species$hi.ci=NA
 summary(dat.species)
 
@@ -212,7 +219,7 @@ ggplot(data=dat.species)+
   geom_point(aes(x=l_mm, y=w_g, color=factor(suspicious)))+
   geom_ribbon(data=ci.dat,aes(x=l_mm,ymin=lo.ci, ymax=hi.ci), alpha=0.2)
 
-dat.species[dat.species$l_mm>50,]
+#dat.species[dat.species$l_mm<75&dat.species$w_g>250,]
 
 # isolate suspicious data
 suspicious.data=dat.species[dat.species$suspicious==1,]

@@ -9,7 +9,7 @@ library(stringr)
 library(grid)
 rm(list = ls())
 '%ni%'=Negate('%in%')
-wd_acces="C:/Users/e.armelloni/OneDrive/Lezioni/Lavoro/Solemon/AtSeaData/2024/OnBoard_2024_ENA/access"
+wd_acces="C:/Users/a.palermino/OneDrive - CNR/Assegno Scarcella/Solemon/Solemon 2024/OnBoard/access"
 DRIVERINFO <- "Driver={Microsoft Access Driver (*.mdb, *.accdb)};"
 
 source_file <- paste0(wd_acces,"/bio_data_v2024_SOLEMON_template.accdb")
@@ -75,7 +75,7 @@ hauls_db_FRA=tables_check2[tables_check2$original_name %ni% common_hauls,]
 hauls_db_FRA$id=seq(1:nrow(hauls_db_FRA))
 
 # find hauls with data taken onboard and to be added
-dir.target.ob='C:/Users/e.armelloni/OneDrive/Lezioni/Lavoro/Solemon/AtSeaData/2024/OnBoard_2024_ENA/data/onboard_measures'
+dir.target.ob="C:/Users/a.palermino/OneDrive - CNR/Assegno Scarcella/Solemon/Solemon 2024/OnBoard/data/onboard_measures"
 x.files.ob=data.frame(target.file=list.files(path=dir.target.ob))
 x.files.ob$hauls.ob=str_remove(str_remove(x.files.ob$target.file,'_onboard_meas.csv'),'haul_')
 
@@ -300,7 +300,7 @@ for(icheck in 1:length(common_hauls)){
 
 
 #### check if there is something to add from the otolith db and then save
-get_tables=function(db,wd_acces='C:/Users/e.armelloni/OneDrive/Lezioni/Lavoro/Solemon/AtSeaData/2024/OnBoard_2024_ENA/access'){
+get_tables=function(db,wd_acces="C:/Users/a.palermino/OneDrive - CNR/Assegno Scarcella/Solemon/Solemon 2024/OnBoard/access"){
   MDBPATH <- paste0(wd_acces,"/Maschera inserimento SOLEMON_",db,".accdb") 
   PATH <- paste0(DRIVERINFO, "DBQ=", MDBPATH)
   channel <- odbcDriverConnect(PATH)
