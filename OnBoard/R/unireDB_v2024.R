@@ -15,6 +15,7 @@ DRIVERINFO <- "Driver={Microsoft Access Driver (*.mdb, *.accdb)};"
 source_file <- paste0(wd_acces,"/bio_data_v2024_SOLEMON_template.accdb")
 file.copy(source_file,  paste0(wd_acces,"/bio_data_v2024_SOLEMON_complete.accdb"), overwrite = TRUE)
 file.copy(source_file,  paste0(wd_acces,"/bio_data_v2024_SOLEMON_BENTHOS_complete.accdb"), overwrite = TRUE)
+target_species<-read.csv("C:/Users/a.palermino/OneDrive - CNR/github/SoleMon_project/OnBoard/data/target_species.csv")
 
 
 
@@ -117,8 +118,8 @@ for(icheck in 1:nrow(hauls_db_ENA)){
     xdat.ob$Sex=ifelse(xdat.ob$Sex=='FALSE','F',xdat.ob$Sex)
     xdat.template$Sex=toupper(xdat.ob$Sex)
     xdat.template$Mat=xdat.ob$Mat
-    xdat.template$kg_field1=xdat.ob$Total.weight
-    xdat.template$weight_g=xdat.ob$Total.weight*1000
+    xdat.template$kg_field1=ifelse(xdat.template$species_name%in%target_species$species_name,xdat.ob$Total.weight,NA)
+    xdat.template$weight_g=ifelse(xdat.template$species_name%in%target_species$species_name,NA,xdat.ob$Total.weight*1000)
     if(haul!='cala_37'){
      xdat.template$weight_g=ifelse(xdat.template$species_name%in%c('HEXATRU','OSTREDU','MUREBRA'),NA,xdat.template$weight_g) 
     }
@@ -193,8 +194,8 @@ for(icheck in 1:nrow(hauls_db_FRA)){
     xdat.ob$Sex=ifelse(xdat.ob$Sex=='FALSE','F',xdat.ob$Sex)
     xdat.template$Sex=toupper(xdat.ob$Sex)
     xdat.template$Mat=xdat.ob$Mat
-    xdat.template$kg_field1=xdat.ob$Total.weight
-    xdat.template$weight_g=xdat.ob$Total.weight*1000
+    xdat.template$kg_field1=ifelse(xdat.template$species_name%in%target_species$species_name,xdat.ob$Total.weight,NA)
+    xdat.template$weight_g=ifelse(xdat.template$species_name%in%target_species$species_name,NA,xdat.ob$Total.weight*1000)
     xdat.template$weight_g=ifelse(xdat.template$species_name%in%c('HEXATRU','OSTREDU','MUREBRA'),NA,xdat.template$weight_g)
     if(tgt.ob$hauls.ob%in%c('12','75')){
       xdat.template$weight_g=xdat.ob$Total.weight
