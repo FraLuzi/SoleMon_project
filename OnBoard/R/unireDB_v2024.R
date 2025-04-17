@@ -120,6 +120,7 @@ for(icheck in 1:nrow(hauls_db_ENA)){
     xdat.template$Mat=xdat.ob$Mat
     xdat.template$kg_field1=ifelse(xdat.template$species_name%in%target_species$species_name,xdat.ob$Total.weight,NA)
     xdat.template$weight_g=ifelse(xdat.template$species_name%in%target_species$species_name,NA,xdat.ob$Total.weight*1000)
+    xdat.template$type_subsample=ifelse(xdat.template$species_name%in%target_species$species_name&is.numeric(xdat.template$kg_field1),"C1_species",NA)
     if(haul!='cala_37'){
      xdat.template$weight_g=ifelse(xdat.template$species_name%in%c('HEXATRU','OSTREDU','MUREBRA'),NA,xdat.template$weight_g) 
     }
@@ -196,7 +197,9 @@ for(icheck in 1:nrow(hauls_db_FRA)){
     xdat.template$Mat=xdat.ob$Mat
     xdat.template$kg_field1=ifelse(xdat.template$species_name%in%target_species$species_name,xdat.ob$Total.weight,NA)
     xdat.template$weight_g=ifelse(xdat.template$species_name%in%target_species$species_name,NA,xdat.ob$Total.weight*1000)
+    xdat.template$type_subsample=ifelse(xdat.template$species_name%in%target_species$species_name&is.numeric(xdat.template$kg_field1),"C1_species",NA)
     xdat.template$weight_g=ifelse(xdat.template$species_name%in%c('HEXATRU','OSTREDU','MUREBRA'),NA,xdat.template$weight_g)
+
     if(tgt.ob$hauls.ob%in%c('12','75')){
       xdat.template$weight_g=xdat.ob$Total.weight
     }
@@ -276,8 +279,9 @@ for(icheck in 1:length(common_hauls)){
     xdat.ob$Sex=ifelse(xdat.ob$Sex=='FALSE','F',xdat.ob$Sex)
     xdat.template$Sex=toupper(xdat.ob$Sex)
     xdat.template$Mat=xdat.ob$Mat
-    xdat.template$kg_field1=xdat.ob$Total.weight
-    xdat.template$weight_g=xdat.ob$Total.weight*1000
+    xdat.template$kg_field1=ifelse(xdat.template$species_name%in%target_species$species_name,xdat.ob$Total.weight,NA)
+    xdat.template$weight_g=ifelse(xdat.template$species_name%in%target_species$species_name,NA,xdat.ob$Total.weight*1000)
+    xdat.template$type_subsample=ifelse(xdat.template$species_name%in%target_species$species_name&is.numeric(xdat.template$kg_field1),"C1_species",NA)
     xdat.template$weight_g=ifelse(xdat.template$species_name%in%c('HEXATRU','OSTREDU','MUREBRA'),NA,xdat.template$weight_g)
     xdat.template$total_number=xdat.ob$Number
     xdat.template$ID=seq(1:nrow(xdat.template))+max(xdat$ID)
