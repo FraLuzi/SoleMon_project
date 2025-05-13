@@ -1,0 +1,11 @@
+"rownames","gear","species_name","length_mm","weight_g","Sex","Mat","id_specimen","length_field2","length_field3","total_number","subsample_number","kg_field1","kg_field2","kg_field3","haul_weight","type_subsample","Notes","ID"
+1,"D","SQUIMAN",30,52,"F",2,NA,0,0,0,0,0,0,0,0,NA,NA,1
+2,NA,NA,29,54,"F",3,NA,0,0,0,0,0,0,0,0,NA,NA,2
+3,NA,NA,35,57,"F",2,NA,0,0,0,0,0,0,0,0,NA,NA,3
+4,NA,NA,30,0,"F",NA,NA,0,0,0,0,0,0,0,0,NA,NA,4
+5,NA,"ARNOLAT",100,9,NA,0,NA,0,0,0,0,0,0,0,0,NA,NA,5
+6,NA,"RAPAVEN",0,723,NA,0,NA,0,0,6,0,0,0,0,0,NA,NA,6
+7,"A","RAPAVEN",0,1006,NA,0,NA,0,0,6,0,0,0,0,0,NA,NA,7
+8,NA,"SQUIMAN",27,38,"M",0,NA,0,0,0,0,0,0,0,0,NA,NA,8
+9,"D","RAJAAST",223,NA,"M",1,NA,NA,NA,NA,NA,0.02,NA,NA,NA,"C1_species",NA,9
+10,"A","RAJAAST",223,NA,"M",1,NA,NA,NA,NA,NA,0.03,NA,NA,NA,"C1_species",NA,10

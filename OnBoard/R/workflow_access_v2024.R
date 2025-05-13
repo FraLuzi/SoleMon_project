@@ -57,7 +57,7 @@ lw.mcmc=read.csv("data/post_dist_all_species.csv")
 
 # multi-haul applications ####
 hauls.need=get_tables(complete = T)
-xhaul=49
+#xhaul=49
 
 for(xhaul in 1:length(hauls.need)){
   cat(xhaul)

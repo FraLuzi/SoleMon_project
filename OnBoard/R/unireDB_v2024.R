@@ -153,7 +153,7 @@ for(icheck in 1:nrow(hauls_db_FRA)){
   
   haul=hauls_db_FRA[icheck, ]$format_name
   haul.name=paste('cala',hauls_db_FRA[icheck, ]$original_name,sep='_')
-  
+  cat(haul.name)
   # import table 1
   MDBPATH <- paste0(wd_acces,"/Maschera inserimento SOLEMON_2024_FRA.accdb")
   PATH <- paste0(DRIVERINFO, "DBQ=", MDBPATH)

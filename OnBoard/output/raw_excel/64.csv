@@ -1,0 +1,16 @@
+"rownames","gear","species_name","length_mm","weight_g","Sex","Mat","id_specimen","length_field2","length_field3","total_number","subsample_number","kg_field1","kg_field2","kg_field3","haul_weight","type_subsample","Notes","ID"
+1,"A","RAPAVEN",0,1587,NA,0,NA,0,0,6,0,0,0,0,0,NA,NA,1
+2,NA,"SOLEVUL",187,52,"M",1,NA,0,0,0,0,0,0,0,0,NA,NA,2
+3,NA,NA,162,36,"M",1,NA,0,0,0,0,0,0,0,0,NA,NA,3
+4,NA,"SQUIMAN",33,58,"F",2,NA,0,0,0,0,0,0,0,0,NA,NA,4
+5,NA,NA,30,42,"F",2,NA,0,0,0,0,0,0,0,0,NA,NA,5
+6,NA,NA,33,59,"F",3,NA,0,0,0,0,0,0,0,0,NA,NA,6
+7,NA,NA,25,29,"M",0,NA,0,0,0,0,0,0,0,0,NA,NA,7
+8,NA,"ARNOLAT",107,0,NA,0,NA,0,0,0,0,0,0,0,0,NA,NA,8
+9,NA,NA,112,21,NA,0,NA,0,0,0,0,0,0,0,0,NA,NA,9
+10,NA,"MUREBRA",NA,632,NA,0,NA,0,0,75,0,0,0,0,0,NA,NA,10
+11,NA,"HEXATRU",0,2646,NA,0,NA,0,0,101,0,0,0,0,0,NA,NA,11
+12,"D","MUREBRA",0,760,NA,0,NA,0,0,78,0,0,0,0,0,NA,NA,12
+13,NA,"SOLEVUL",230,106,"M",1,NA,0,0,0,0,0,0,0,0,NA,NA,13
+14,NA,"RAPAVEN",0,2344,NA,0,NA,0,0,10,0,0,0,0,0,NA,NA,14
+15,NA,"HEXATRU",0,1587,NA,0,NA,0,0,63,0,0,0,0,0,NA,NA,15

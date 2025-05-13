@@ -1,0 +1,10 @@
+"gear","species_name","length_mm","weight_g","Sex","Mat","id_specimen","length_field2","length_field3","total_number","number_field2","kg_field1","kg_field2","kg_field3","type_subsample","Notes","ID"
+"A","SOLEVUL",124,22,"M",1,NA,0,0,0,0,0,0,0,NA,NA,1
+NA,NA,158,24,"F",2,NA,0,0,0,0,0,0,0,NA,NA,2
+NA,NA,130,24,"M",3,NA,0,0,0,0,0,0,0,NA,NA,3
+NA,"BUGLLUT",125,0,NA,0,NA,0,0,0,0,0,0,0,NA,NA,4
+NA,NA,124,0,NA,0,NA,0,0,0,0,0,0,0,NA,NA,5
+NA,NA,120,0,NA,0,NA,0,0,0,0,0,0,0,NA,NA,6
+NA,NA,99,84,NA,0,NA,0,0,0,0,0,0,0,NA,NA,7
+NA,"OSTREDU",0,180,NA,0,NA,0,0,10,0,0,0,0,NA,NA,8
+NA,"RAJAAST",250,400,"F",1,NA,230,99,0,0,0,0,0,NA,NA,9
