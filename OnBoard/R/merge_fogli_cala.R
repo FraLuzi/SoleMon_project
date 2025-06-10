@@ -1,4 +1,4 @@
-setwd("C:/Users/e.armelloni/OneDrive/Lezioni/Lavoro/Solemon/AtSeaData/2024/fogli_cala")
+setwd("C:/Users/a.palermino/OneDrive - CNR/github/SoleMon_project/OnBoard/data/fogli_cala")
 library(dplyr)
 library(purrr)
 library(readxl)
@@ -44,12 +44,12 @@ for(i in 1:length(station.files)){
              sheet = "Samples onboard")
   if(nrow(sample.dat)>0){
   
-   write.csv(sample.dat, file=paste0('C:/Users/e.armelloni/Desktop/OnBoard_2024_ENA/data/onboard_measures/haul_',haul_id ,'_onboard_meas.csv'),row.names = F) 
+   write.csv(sample.dat, file=paste0('C:/Users/a.palermino/OneDrive - CNR/github/SoleMon_project/OnBoard/data/onboard_measures/haul_',haul_id ,'_onboard_meas.csv'),row.names = F) 
   }
   
 
 }
-writexl::write_xlsx(list.hauls, 'C:/Users/e.armelloni/Desktop/OnBoard_2024_ENA/data/haul_order.xlsx')
+writexl::write_xlsx(list.hauls, 'C:/Users/a.palermino/OneDrive - CNR/github/SoleMon_project/OnBoard/data/haul_order.xlsx')
 
 
 
