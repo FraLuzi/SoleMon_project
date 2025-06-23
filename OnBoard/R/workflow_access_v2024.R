@@ -28,7 +28,7 @@ unique(haul_order$haul)
 # set parameters
 haul='all' # single haul OR 'all'
 db='2024_ENA' # to be specified only for single hauls
-updateID='N'
+updateID='N' # if Y it updates the amount of fish which has an ID assigned per category
 area_sepia='D'
 year=2024
 area='ITA17' 
@@ -43,6 +43,8 @@ names(dat.lit)[7]='w_g'
 dat.lit=dat.lit%>%
   dplyr::group_by(Station=as.character(Station))%>%
   dplyr::summarise(kg_litter=sum(as.numeric(w_g))/1000)
+
+# extra data is used to compute the raising factor
 extra.data=readr::read_delim("data/additions_benthos.csv", 
            delim = ";", escape_double = FALSE, trim_ws = TRUE)
 
@@ -53,7 +55,7 @@ haul.info[,2:6]=apply(haul.info[,2:6],2,as.numeric)
 names(haul.info)=c('Station','rapiA_kg', 'rapiA_tara','rapiD_kg', 'rapiD_tara', 'benthos_kg','litter_kg')
 haul.info=haul.info%>%replace(is.na(.),0)
 
-lw.mcmc=read.csv("data/post_dist_all_species.csv")
+lw.mcmc=read.csv("data/post_dist_good_species.csv")
 
 # multi-haul applications ####
 hauls.need=get_tables(complete = T)
@@ -77,8 +79,7 @@ for(xhaul in 1:length(hauls.need)){
                        haul=haul, 
                        year = year, 
                        weight_not_target = hauldata[[2]],  
-                       subsamples_target=hauldata[[3]],
-                       catch_sample_disattivati = catch_sample_disattivati)
+                       subsamples_target=hauldata[[3]])
     
   }else{
     benthosdata=function_benthos(haul=str_remove( hauls.need[xhaul] ,'cala_'),
@@ -96,14 +97,15 @@ for(xhaul in 1:length(hauls.need)){
                                weight_not_target = hauldata[[2]], 
                                weight_benthos=benthosdata[[2]],
                                info.haul=haul.info[haul.info$Station==str_remove( hauls.need[xhaul] ,'cala_'),],
-                               subsamples_target=hauldata[[3]],
-                               catch_sample_disattivati = catch_sample_disattivati) 
+                               subsamples_target=hauldata[[3]]) 
     
   }
 }
 
 
 # single haul application ####
+
+haul='all' # single haul OR 'all'
 # function1 extract data from access db and format them
 hauldata=function1(haul=haul, 
                    year=year,
@@ -154,32 +156,6 @@ function4(trustdat = trustdat,
           year=year,
           area = area,
           haul=haul)
-
-
-
-
-
-
-
-
-
-
-x.change=changes[changes$haul==str_remove( hauls.need[xhaul] ,'cala_'),]
-x.change$treatment
-
-
-xdat=hauldata[[1]];
-xdat_benthos=benthosdata[[1]];
-haul=str_remove( hauls.need[xhaul] ,'cala_');
-year = year;
-weight_not_target = hauldata[[2]]; 
-weight_benthos=benthosdata[[2]];
-info.haul=haul.info[haul.info$Station==str_remove( hauls.need[xhaul] ,'cala_'),];
-subsamples_target=hauldata[[3]];
-catch_sample_disattivati = catch_sample_disattivati
-
-
-
 
 
 ## check subsamples ####

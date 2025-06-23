@@ -1,3 +1,8 @@
+## MERGE ACCESS COMING FROM DIFFERENTE PC AND THE MEASURES TAKEN ONBOARD IN HAULS EXCEL SHEET
+# It allows merging hauls also in case the same haul is present in more than one PC
+
+# Before start it is needed to change the working directory and the access names based on the present year
+
 library(magrittr)
 library(dplyr)
 library(purrr)
@@ -15,8 +20,7 @@ DRIVERINFO <- "Driver={Microsoft Access Driver (*.mdb, *.accdb)};"
 source_file <- paste0(wd_acces,"/bio_data_v2024_SOLEMON_template.accdb")
 file.copy(source_file,  paste0(wd_acces,"/bio_data_v2024_SOLEMON_complete.accdb"), overwrite = TRUE)
 file.copy(source_file,  paste0(wd_acces,"/bio_data_v2024_SOLEMON_BENTHOS_complete.accdb"), overwrite = TRUE)
-target_species<-read.csv("C:/Users/a.palermino/OneDrive - CNR/github/SoleMon_project/OnBoard/data/target_species.csv")
-
+target_species<-read.csv("C:/Users/a.palermino/OneDrive - CNR/github/SoleMon_project/OnBoard/data/target_species.csv")%>%filter(target==1)
 
 
 store.hauls=list()
@@ -95,44 +99,31 @@ for(icheck in 1:nrow(hauls_db_ENA)){
                    paste0("SELECT * FROM [", haul, "] ORDER BY [ID]"),
                    stringsAsFactors = FALSE) # Load data into R dataframe
   
-  
   close(channel)
   
-  # check if more data needs to be added #
-  if(str_remove(haul,'cala_')%in%x.files.ob$hauls.ob){
-    tgt.ob=x.files.ob[x.files.ob$hauls.ob==str_remove(haul,'cala_'),]
-    xdat.ob=read.csv(file.path(dir.target.ob, tgt.ob$target.file))
-    
-    # correct errors
-    xdat.ob$Species=ifelse(xdat.ob$Species=='PTERBOV','PTEOBOV',xdat.ob$Species)
-    xdat.ob$Species=ifelse(xdat.ob$Species=='Ostrea edulis','OSTREDU',xdat.ob$Species)
-    xdat.ob$Species=ifelse(xdat.ob$Species=='SCIOCAN','SCYOCAN',xdat.ob$Species)
-    
-    # 
-    xdat.template=xdat[1,]
-    xdat.template[1,]=NA
-    xdat.template=rbind(xdat.template, xdat.template[rep(1, nrow(xdat.ob)-1), ])
-    xdat.template$gear=toupper(xdat.ob$Gear)
-    xdat.template$species_name=toupper(xdat.ob$Species)
-    xdat.template$length_mm=xdat.ob$Lenght
-    xdat.ob$Sex=ifelse(xdat.ob$Sex=='FALSE','F',xdat.ob$Sex)
-    xdat.template$Sex=toupper(xdat.ob$Sex)
-    xdat.template$Mat=xdat.ob$Mat
-    xdat.template$kg_field1=ifelse(xdat.template$species_name%in%target_species$species_name,xdat.ob$Total.weight,NA)
-    xdat.template$weight_g=ifelse(xdat.template$species_name%in%target_species$species_name,NA,xdat.ob$Total.weight*1000)
-    xdat.template$type_subsample=ifelse(xdat.template$species_name%in%target_species$species_name&is.numeric(xdat.template$kg_field1),"C1_species",NA)
-    if(haul!='cala_37'){
-     xdat.template$weight_g=ifelse(xdat.template$species_name%in%c('HEXATRU','OSTREDU','MUREBRA'),NA,xdat.template$weight_g) 
-    }
-    xdat.template$total_number=xdat.ob$Number
-    xdat.template$ID=seq(1:nrow(xdat.template))+max(xdat$ID)
-    if(tgt.ob$hauls.ob=='4'){
-      xdat.template$length_mm=930
-      xdat.template$length_field2=570
-      xdat.template$length_field3=350
-    }
-    xdat=rbind(xdat, xdat.template)
-  }
+  # # check if more data needs to be added #
+  # if(str_remove(haul,'cala_')%in%x.files.ob$hauls.ob){
+  #   tgt.ob=x.files.ob[x.files.ob$hauls.ob==str_remove(haul,'cala_'),]
+  #   xdat.ob=read.csv(file.path(dir.target.ob, tgt.ob$target.file))
+  #   
+  #   xdat.template=xdat[1,]
+  #   xdat.template[1,]=NA
+  #   xdat.template=rbind(xdat.template, xdat.template[rep(1, nrow(xdat.ob)-1), ])
+  #   rownames(xdat.template)=NULL
+  #   xdat.template$gear=toupper(xdat.ob$Gear)
+  #   xdat.template$gear=ifelse(xdat.template$gear=="",NA,xdat.template$gear)
+  #   xdat.template$species_name=toupper(xdat.ob$Species)
+  #   xdat.template$species_name=ifelse(xdat.template$species_name=="",NA,xdat.template$species_name)
+  #   xdat.template$length_mm=xdat.ob$Lenght_mm
+  #   xdat.ob$Sex=ifelse(xdat.ob$Sex=='FALSE','F',xdat.ob$Sex)
+  #   xdat.template$Sex=toupper(xdat.ob$Sex)
+  #   xdat.template$Mat=xdat.ob$Mat
+  #   xdat.template$weight_g=ifelse(is.na(xdat.ob$Weight_g),xdat.ob$Total.weight_g,
+  #                                 xdat.ob$Weight_g)
+  #   xdat.template$total_number=xdat.ob$Number
+  #   xdat.template$ID=seq(1:nrow(xdat.template))+max(xdat$ID)
+  #   xdat=rbind(xdat, xdat.template)
+  # }
   
   # save on final db
   
@@ -144,7 +135,6 @@ for(icheck in 1:nrow(hauls_db_ENA)){
   xdat$ID=1:nrow(xdat)
   store.hauls[[icheck]]=xdat
   names(store.hauls)[icheck]=haul
-  
 }
 
 
@@ -165,51 +155,29 @@ for(icheck in 1:nrow(hauls_db_FRA)){
   
   close(channel)
   
-  # check if more data needs to be added #
-  if(str_remove(haul,'cala_')%in%x.files.ob$hauls.ob){
-    tgt.ob=x.files.ob[x.files.ob$hauls.ob==str_remove(haul,'cala_'),]
-    xdat.ob=read.csv(file.path(dir.target.ob, tgt.ob$target.file))
-    xdat.ob$Species=ifelse(xdat.ob$Species=='Cassidaria','GALEECH',xdat.ob$Species)
-    xdat.ob$Species=ifelse(xdat.ob$Species=='Bolinus brandaris','MUREBRA',xdat.ob$Species)
-    
-    if(tgt.ob$hauls.ob=='48'){
-      xdat.ob$Lenght=as.numeric(substr(xdat.ob$Lenght,1,3))
-    }
-    if(tgt.ob$hauls.ob=='55'){
-      xdat.ob$Total.weight=xdat.ob$Total.weight..kg.
-    }
-    if(tgt.ob$hauls.ob=='68'){
-      xdat.ob$Total.weight=xdat.ob$Total.weight.kg
-    }
-    if(tgt.ob$hauls.ob=='75'){
-      xdat.ob$Total.weight=xdat.ob$Total.weight=5000
-      xdat.ob$Lenght=20
-      xdat.ob$Species='OCTOVUL'
-    }
-    xdat.template=xdat[1,]
-    xdat.template[1,]=NA
-    xdat.template=rbind(xdat.template, xdat.template[rep(1, nrow(xdat.ob)-1), ])
-    xdat.template$gear=toupper(xdat.ob$Gear)
-    xdat.template$species_name=toupper(xdat.ob$Species)
-    xdat.template$length_mm=xdat.ob$Lenght
-    xdat.ob$Sex=ifelse(xdat.ob$Sex=='FALSE','F',xdat.ob$Sex)
-    xdat.template$Sex=toupper(xdat.ob$Sex)
-    xdat.template$Mat=xdat.ob$Mat
-    xdat.template$kg_field1=ifelse(xdat.template$species_name%in%target_species$species_name,xdat.ob$Total.weight,NA)
-    xdat.template$weight_g=ifelse(xdat.template$species_name%in%target_species$species_name,NA,xdat.ob$Total.weight*1000)
-    xdat.template$type_subsample=ifelse(xdat.template$species_name%in%target_species$species_name&is.numeric(xdat.template$kg_field1),"C1_species",NA)
-    xdat.template$weight_g=ifelse(xdat.template$species_name%in%c('HEXATRU','OSTREDU','MUREBRA'),NA,xdat.template$weight_g)
-
-    if(tgt.ob$hauls.ob%in%c('12','75')){
-      xdat.template$weight_g=xdat.ob$Total.weight
-    }
-    if(tgt.ob$hauls.ob=='55'){
-      xdat.template$weight_g=NA
-    }
-    xdat.template$total_number=xdat.ob$Number
-    xdat.template$ID=seq(1:nrow(xdat.template))+max(xdat$ID)
-    xdat=rbind(xdat, xdat.template)
-  }
+  # # check if more data needs to be added #
+  # if(str_remove(haul,'cala_')%in%x.files.ob$hauls.ob){
+  #   tgt.ob=x.files.ob[x.files.ob$hauls.ob==str_remove(haul,'cala_'),]
+  #   xdat.ob=read.csv(file.path(dir.target.ob, tgt.ob$target.file))
+  #   
+  #   xdat.template=xdat[1,]
+  #   xdat.template[1,]=NA
+  #   xdat.template=rbind(xdat.template, xdat.template[rep(1, nrow(xdat.ob)-1), ])
+  #   rownames(xdat.template)=NULL
+  #   xdat.template$gear=toupper(xdat.ob$Gear)
+  #   xdat.template$gear=ifelse(xdat.template$gear=="",NA,xdat.template$gear)
+  #   xdat.template$species_name=toupper(xdat.ob$Species)
+  #   xdat.template$species_name=ifelse(xdat.template$species_name=="",NA,xdat.template$species_name)
+  #   xdat.template$length_mm=xdat.ob$Lenght_mm
+  #   xdat.ob$Sex=ifelse(xdat.ob$Sex=='FALSE','F',xdat.ob$Sex)
+  #   xdat.template$Sex=toupper(xdat.ob$Sex)
+  #   xdat.template$Mat=xdat.ob$Mat
+  #   xdat.template$weight_g=ifelse(is.na(xdat.ob$Weight_g),xdat.ob$Total.weight_g,
+  #                                 xdat.ob$Weight_g)
+  #   xdat.template$total_number=xdat.ob$Number
+  #   xdat.template$ID=seq(1:nrow(xdat.template))+max(xdat$ID)
+  #   xdat=rbind(xdat, xdat.template)
+  # }
   
   xdat$ID=1:nrow(xdat)
   # save on final db
@@ -255,38 +223,28 @@ for(icheck in 1:length(common_hauls)){
   close(channel)
   print(paste(haul, identical(xdat, xdatbis)))
   
-  # cala 29 corretto il SOLEMON_2023_1
-  # cala 31 corretto il SOLEMON_2023_1
-  # cala 32 corretto il SOLEMON_2023_1
-  
-  if(str_remove(haul,'cala_')%in%x.files.ob$hauls.ob){
-    tgt.ob=x.files.ob[x.files.ob$hauls.ob==str_remove(haul,'cala_'),]
-    xdat.ob=read.csv(file.path(dir.target.ob, tgt.ob$target.file))
-    
-    # correct errors
-    xdat.ob$Species=ifelse(xdat.ob$Species=='Ostrea edulis','OSTREDU',xdat.ob$Species)
-    xdat.ob$Species=ifelse(xdat.ob$Species=='SCIOCAN','SCYOCAN',xdat.ob$Species)
-    if(tgt.ob$hauls.ob=='4'){
-      xdat.ob$Lenght=930
-    }
-    # 
-    xdat.template=xdat[1,]
-    xdat.template[1,]=NA
-    xdat.template=rbind(xdat.template, xdat.template[rep(1, nrow(xdat.ob)-1), ])
-    xdat.template$gear=toupper(xdat.ob$Gear)
-    xdat.template$species_name=toupper(xdat.ob$Species)
-    xdat.template$length_mm=xdat.ob$Lenght
-    xdat.ob$Sex=ifelse(xdat.ob$Sex=='FALSE','F',xdat.ob$Sex)
-    xdat.template$Sex=toupper(xdat.ob$Sex)
-    xdat.template$Mat=xdat.ob$Mat
-    xdat.template$kg_field1=ifelse(xdat.template$species_name%in%target_species$species_name,xdat.ob$Total.weight,NA)
-    xdat.template$weight_g=ifelse(xdat.template$species_name%in%target_species$species_name,NA,xdat.ob$Total.weight*1000)
-    xdat.template$type_subsample=ifelse(xdat.template$species_name%in%target_species$species_name&is.numeric(xdat.template$kg_field1),"C1_species",NA)
-    xdat.template$weight_g=ifelse(xdat.template$species_name%in%c('HEXATRU','OSTREDU','MUREBRA'),NA,xdat.template$weight_g)
-    xdat.template$total_number=xdat.ob$Number
-    xdat.template$ID=seq(1:nrow(xdat.template))+max(xdat$ID)
-    xdat=rbind(xdat, xdat.template)
-  }
+  # if(str_remove(haul,'cala_')%in%x.files.ob$hauls.ob){
+  #   tgt.ob=x.files.ob[x.files.ob$hauls.ob==str_remove(haul,'cala_'),]
+  #   xdat.ob=read.csv(file.path(dir.target.ob, tgt.ob$target.file))
+  #   
+  #   xdat.template=xdat[1,]
+  #   xdat.template[1,]=NA
+  #   xdat.template=rbind(xdat.template, xdat.template[rep(1, nrow(xdat.ob)-1), ])
+  #   rownames(xdat.template)=NULL
+  #   xdat.template$gear=toupper(xdat.ob$Gear)
+  #   xdat.template$gear=ifelse(xdat.template$gear=="",NA,xdat.template$gear)
+  #   xdat.template$species_name=toupper(xdat.ob$Species)
+  #   xdat.template$species_name=ifelse(xdat.template$species_name=="",NA,xdat.template$species_name)
+  #   xdat.template$length_mm=xdat.ob$Lenght_mm
+  #   xdat.ob$Sex=ifelse(xdat.ob$Sex=='FALSE','F',xdat.ob$Sex)
+  #   xdat.template$Sex=toupper(xdat.ob$Sex)
+  #   xdat.template$Mat=xdat.ob$Mat
+  #   xdat.template$weight_g=ifelse(is.na(xdat.ob$Weight_g),xdat.ob$Total.weight_g,
+  #                                 xdat.ob$Weight_g)
+  #   xdat.template$total_number=xdat.ob$Number
+  #   xdat.template$ID=seq(1:nrow(xdat.template))+max(xdat$ID)
+  #   xdat=rbind(xdat, xdat.template)
+  # }
   
   xdatbis$ID=seq(max(xdat$ID)+1,(max(xdat$ID)+nrow(xdatbis)),1)
   xdat.combined=rbind(xdat, xdatbis)
@@ -335,20 +293,6 @@ for(icheck in 1:length(store.hauls)){
     i.haul=rbind(i.haul, xdat)
   }
   
-  #### fix errors
-  if(i.nm=='cala_25'){
-    i.haul=i.haul[-which(i.haul$ID %in% 157:160),]
-    i.haul$ID=seq(1:nrow(i.haul))
-  }
-  
-  if(i.nm=='cala_45'){
-    i.haul[i.haul$species_name%in% c('HIPPHIP', 'HIPGUT'),]$length_mm=i.haul[i.haul$species_name%in% c('HIPPHIP', 'HIPGUT'),]$length_mm*10
-    i.haul[i.haul$species_name%in% c('HIPPHIP', 'HIPGUT'),]$weight_g=i.haul[i.haul$species_name%in% c('HIPPHIP', 'HIPGUT'),]$kg_field1*1000
-    i.haul[i.haul$species_name%in% c('HIPPHIP', 'HIPGUT'),]$kg_field1=0
-    i.haul[i.haul$species_name%in% c('HIPPHIP', 'HIPGUT'),]$species_name=c('HIPPHIC','HIPPGUT')
-  }
-  
-  
   ### upload data
   
   MDBPATH <- paste0(wd_acces,"/bio_data_v2024_SOLEMON_complete.accdb")
@@ -377,6 +321,7 @@ for(icheck in 1:length(tab.1)){
                      paste0("SELECT * FROM [", i.nm, "] ORDER BY [ID]"),
                      stringsAsFactors = FALSE) # Load data into R dataframe
     close(channel)
+    xdat$Sex=ifelse(xdat$Sex=='FALSE','F',xdat$Sex)
     benthos.dat[[icheck]]=xdat
     names(benthos.dat)[icheck]=i.nm
 }
@@ -396,6 +341,7 @@ for(icheck in 1:length(tab.2)){
                    paste0("SELECT * FROM [", i.nm, "] ORDER BY [ID]"),
                    stringsAsFactors = FALSE) # Load data into R dataframe
   close(channel)
+  xdat$Sex=ifelse(xdat$Sex=='FALSE','F',xdat$Sex)
   benthos.dat=append(benthos.dat, list(xdat))
   names(benthos.dat)[length(benthos.dat)]=i.nm
   
@@ -413,28 +359,5 @@ for(icheck in 1:length(benthos.dat)){
   sqlSave(channel, dat=data.frame(i.haul), tablename = i.nm, rownames = TRUE)
   close(channel)
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

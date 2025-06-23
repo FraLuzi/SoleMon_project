@@ -1,3 +1,4 @@
-"Gear","Species","Lenght","Sex","Mat","Total weight kg","Number"
-"A","Ostrea edulis",NA,NA,NA,5.5,81
-"D","Ostrea edulis",NA,NA,NA,6,87
+"Gear","Species","Lenght_mm","Weight_g","Sex","Mat","Number","Total weight_g"
+"A","OSTREDU",NA,NA,NA,NA,81,5500
+"D","OSTREDU",NA,NA,NA,NA,87,6000
+NA,NA,NA,NA,NA,NA,NA,NA

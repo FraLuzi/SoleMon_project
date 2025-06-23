@@ -1,3 +1,3 @@
-"Gear","Species","Lenght","Sex","Mat","Total weight","Number"
-"A","SCYOCAN",415,"F",1,0.3,NA
-"A","SCYOCAN",420,"F",1,0.3,NA
+"Gear","Species","Lenght_mm","Weight_g","Sex","Mat","Number","Total weight_g"
+"A","SCYOCAN",415,300,"F",1,NA,NA
+"A","SCYOCAN",420,300,"F",1,NA,NA

@@ -1,2 +1,2 @@
-"Gear","Species","Lenght","Sex","Mat","Total weight","Number"
-"A","Octopus vulgaris","20 cm ML",NA,NA,"5 kg",1
+"Gear","Species","Lenght_mm","Weight_g","Sex","Mat","Number","Total weight"
+"A","Octopus vulgaris",200,5000,NA,NA,NA,NA

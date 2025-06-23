@@ -33,9 +33,8 @@ setwd(main_wd)
 # load data ####
 species_list=read_excel("data/species_list.xlsx")
 mat_list=read_excel("data/maturity_stages.xlsx")
-lw_pars=read_excel("data/lw_pars.xlsx")
+lw_solemon=read_excel("data/lw_SoleMon.xlsx")
 haul_order <- read_excel("data/haul_order.xlsx")
-catch_sample_disattivati <- read_excel("data/catch_sample_disattivati.xlsx")
 solemonTB=read_excel('data/solemon_TB.xlsx')
 solemonTB$species_name=paste0(solemonTB$GENUS, solemonTB$SPECIES)
 target_species=read_excel('data/target_species.xlsx')
@@ -51,7 +50,7 @@ names(species_list)[2]='species_name'
 species_list=left_join(species_list, target_species,by='species_name')%>%
   replace(is.na(.),0)
 
-# Create folders if do not exsist to save outputs ##   ######## modified_AP ######
+# Create folders if do not exsist to save outputs ##  
 if(!dir.exists("output")) dir.create(path="output")
 if(!dir.exists("output/checks")) dir.create(path="output/checks")
 if(!dir.exists("output/pdf")) dir.create(path="output/pdf")
@@ -62,7 +61,10 @@ if(!dir.exists("output/trust/catch")) dir.create(path="output/trust/catch")
 if(!dir.exists("output/trust/catch_sample")) dir.create(path="output/trust/catch_sample")
 
 # Run
-# extract and format data 
+
+#**********************************
+# extract and format data
+#**********************************
 function1=function(haul, db=NA, year, complete=F){
  
   print(paste('Processing haul', haul))
@@ -83,8 +85,9 @@ function1=function(haul, db=NA, year, complete=F){
   close(channel)
   rm(channel)
   
-  # format data art 1: empty cells, NAs, zeros #### 
-  write.csv(xdat, paste0('output/raw_excel/',haul,'.csv'),row.names = F) # new line
+  # format data part 1: empty cells, NAs, zeros #### 
+  # make a copy of xdat in excel to be investigated if needed
+  write.csv(xdat, paste0('output/raw_excel/',haul,'.csv'),row.names = F)
   
   xdat$idfk=seq(1:nrow(xdat))
   deleterow=xdat[xdat$length_mm %in% c(NA, 0) & 
@@ -113,35 +116,35 @@ function1=function(haul, db=NA, year, complete=F){
   xdat=left_join(xdat, species_list, by='species_name') # attach info on target species
   if(nrow(xdat[is.na(xdat$target),])>0){xdat[is.na(xdat$target),]$target=0}# (name and target [Y/N], then check that no target species is NA)
   
-  # Genetic and otolits IDs ####
-  FishIDs=read_excel("data/fishID.xlsx") # load files where otolit and gen ids are stored
-  FishIDs_support=strsplit(as.character(str_replace_all(FishIDs$species, ':', ',')), ',')
-  #xdat$Oth=xdat$id_specimen
-  #xdat$fish_ID=as.character(NA)
-  
-  if(updateID=='Y'){
-  # assign FishID (deprecated in 2024)
-  for(i in 1:nrow(xdat)){
-       if(is.na(xdat[i,]$id_specimen)==FALSE){
-         # look into the FishID file for the correct species
-          for(j in 1:length(FishIDs_support)){
-            if(xdat[i,]$species_name%in%FishIDs_support[[j]]){
-            FishIDs_row=j
-            break
-            }
-           }
-        # assign FISHID
-        xdat[i,]$fish_ID=paste0(FishIDs[FishIDs_row,]$code, FishIDs[FishIDs_row,]$fishID+1)
-        # update FishID file
-        FishIDs[FishIDs_row,]$fishID=FishIDs[FishIDs_row,]$fishID+1
-        }
-      }
-    
-  # save updated id sheet
-  writexl::write_xlsx(FishIDs, "data/fishID.xlsx")}else{
-    
-   # xdat$fish_ID=xdat$id_specimen
-  }
+  # # Genetic and otolits IDs ####
+  # FishIDs=read_excel("data/fishID.xlsx") # load files where otolit and gen ids are stored
+  # FishIDs_support=strsplit(as.character(str_replace_all(FishIDs$species, ':', ',')), ',')
+  # #xdat$Oth=xdat$id_specimen
+  # #xdat$fish_ID=as.character(NA)
+  # 
+  # if(updateID=='Y'){
+  # # assign FishID (deprecated in 2024)
+  # for(i in 1:nrow(xdat)){
+  #      if(is.na(xdat[i,]$id_specimen)==FALSE){
+  #        # look into the FishID file for the correct species
+  #         for(j in 1:length(FishIDs_support)){
+  #           if(xdat[i,]$species_name%in%FishIDs_support[[j]]){
+  #           FishIDs_row=j
+  #           break
+  #           }
+  #          }
+  #       # assign FISHID
+  #       xdat[i,]$fish_ID=paste0(FishIDs[FishIDs_row,]$code, FishIDs[FishIDs_row,]$fishID+1)
+  #       # update FishID file
+  #       FishIDs[FishIDs_row,]$fishID=FishIDs[FishIDs_row,]$fishID+1
+  #       }
+  #     }
+  #   
+  # # save updated id sheet
+  # writexl::write_xlsx(FishIDs, "data/fishID.xlsx")}else{
+  #   
+  #  # xdat$fish_ID=xdat$id_specimen
+  # }
   
   # sex and maturity ####
   # format data
@@ -168,46 +171,6 @@ function1=function(haul, db=NA, year, complete=F){
       }
     }
   }
-  
-  # Non Target Species ####
-  ## l-w reconstruction ####
-  # Fill gaps non target species L-W relationship (oct 2024)
-  # this still needs some a and b parameters in the biological parameters list
-  if(nrow(xdat)>0){
-    xdat<-xdat%>% 
-      dplyr::group_by(gear, species_name) %>%
-      dplyr::mutate(Freq = n())
-    for(i in 1:nrow(xdat)){
-      # format length weight data
-      if(xdat[i,]$species_name %in% lw_pars$species_name & 
-         xdat[i,]$species_name %in% non_target_list){
-        # adjust weight
-        if(xdat[i,]$weight_g==0|is.na(xdat[i,]$weight_g) & xdat[i,]$Freq==1){
-            a=lw_pars[lw_pars$species_name==xdat[i,]$species_name,]$a
-            b=lw_pars[lw_pars$species_name==xdat[i,]$species_name,]$b
-          }
-          if(xdat[i,]$species_name  %in% crustaceans & xdat[i,]$Freq==1){
-            xdat[i,]$weight_g=round((a*xdat[i,]$length_mm^b))
-          }
-        if(xdat[i,]$Freq==1){
-            xdat[i,]$weight_g=round((a*xdat[i,]$length_mm^b)/1000)
-          }
-        # adjust length
-        if(xdat[i,]$length_mm==0|is.na(xdat[i,]$length_mm)& xdat[i,]$Freq==1){
-            a=lw_pars[lw_pars$species_name==xdat[i,]$species_name,]$a
-            b=lw_pars[lw_pars$species_name==xdat[i,]$species_name,]$b
-          }
-          if(xdat[i,]$species_name  %in% crustaceans & xdat[i,]$Freq==1){
-            xdat[i,]$length_mm=round((xdat[i,]$weight_g/(a))^(1/b))
-          }
-        if(xdat[i,]$Freq==1){
-            xdat[i,]$length_mm=round((xdat[i,]$weight_g/(a/1000))^(1/b))
-                }
-              }
-            }
-          }
-  xdat<-subset(xdat, select=-Freq)
-  # end new section
   
   ## summarise weight data for other commercial species ####
   weight_not_target=xdat[xdat$target!=1 & xdat$species_name%ni% shells,]%>%
@@ -236,17 +199,22 @@ function1=function(haul, db=NA, year, complete=F){
       if(nrow(shells_raising)>0){
         for(j in 1:nrow(shells_raising)){
           if(shells_raising[j,]$type_subsample=='C1_species'){
-            # case 1, presi tutti animali da cala e poi fatto subcampione per ottenere il numero: n va calcolato, poi kg_subsample diventa w_g
+            # case 1, presi tutti animali da cala e poi fatto subcampione per ottenere il numero: 
+            # n va calcolato, poi kg_subsample diventa w_g
             w_tot=shells_raising[j,]$kg_field1
             n_tot=shells_raising[j,]$kg_field1*(shells_raising[j,]$subsample_number/shells_raising[j,]$kg_field2)
             
           }else if(shells_raising[j,]$type_subsample%in%c('C2_haul','C3_benthos')){
-            # case 2, fatto subcampione da cala e poi processati tutti individui del subcampione: n_tot va calcolato, w_tot va calcolato
+            # case 2, fatto subcampione da cala e poi processati tutti individui del subcampione: 
+            # n_tot va calcolato, w_tot va calcolato
             w_tot=shells_raising[j,]$kg_field2*(shells_raising[j,]$haul_weight/shells_raising[j,]$kg_field1) 
             n_tot=w_tot*(shells_raising[j,]$subsample_number/shells_raising[j,]$kg_field2) # number in subsample
             
           }else if(shells_raising[j,]$type_subsample=='C4_multiple'){
-            # case 3 multispecies: ALL individuals of multiple species collected from the haul, subsample of multiple species together, splitting of the species, subsample only for estimating total number (proportion done onboard, so we have the total number of the subsample
+            # case 3 multispecies: ALL individuals of multiple species collected from the haul, 
+            # subsample of multiple species together, splitting of the species, 
+            # subsample only for estimating total number (proportion done onboard, 
+            # so we have the total number of the subsample
             w_tot=shells_raising[j,]$kg_field1*(shells_raising[j,]$kg_field3/shells_raising[j,]$kg_field2) 
             n_tot=w_tot*(shells_raising[j,]$subsample_number/shells_raising[j,]$kg_field3)
             
@@ -290,10 +258,12 @@ function1=function(haul, db=NA, year, complete=F){
         meas_n=nrow(measured_animals)
         
         if(subsamples_target[k,]$type_subsample=='C1_species'){
-          # case 1, presi tutti animali da cala e poi fatto subcampione per ottenere il numero: n va calcolato, poi kg_subsample diventa w_g
+          # case 1, presi tutti animali da cala e poi fatto subcampione per ottenere il numero: 
+          # n va calcolato, poi kg_subsample diventa w_g
           print(paste('subsample case1 done for', subsamples_target[k,]$species_name))
           if(!is.na(subsamples_target[k,]$kg_field2)){
-            print(paste('ratio between recorded and measured subsample is:', (subsamples_target[k,]$kg_field2*1000)/meas_grams))
+            print(paste('ratio between recorded and measured subsample is:', 
+                        (subsamples_target[k,]$kg_field2*1000)/meas_grams))
             meas_grams=subsamples_target[k,]$kg_field2*1000
           }
           # assign number and weight
@@ -301,10 +271,12 @@ function1=function(haul, db=NA, year, complete=F){
           subsamples_target[k,]$weight_g=round(subsamples_target[k,]$kg_field1*1000)
           
         }else if(subsamples_target[k,]$type_subsample%in%c('C2_haul','C3_benthos')){
-          # case 2, fatto subcampione da cala e poi processati tutti individui del subcampione: n_tot va calcolato, w_tot va calcolato
+          # case 2, fatto subcampione da cala e poi processati tutti individui del subcampione: 
+          # n_tot va calcolato, w_tot va calcolato
           print(paste('subsample case2 done for', subsamples_target[k,]$species_name))
           if(!is.na(subsamples_target[k,]$kg_field2)&subsamples_target[k,]$kg_field2>0){
-            print(paste('ratio between recorded and measured subsample is:', (subsamples_target[k,]$kg_field2*1000)/meas_grams))
+            print(paste('ratio between recorded and measured subsample is:', 
+                        (subsamples_target[k,]$kg_field2*1000)/meas_grams))
             meas_grams=subsamples_target[k,]$kg_field2*1000
           }
           # assign number and weight
@@ -330,51 +302,12 @@ function1=function(haul, db=NA, year, complete=F){
   }
   
   ## Fill gaps for target: lw ####
-  #if(nrow(xdat)>0){
-  #  for(i in 1:nrow(xdat)){
-  #    # format length weight data 
-  #    if(xdat[i,]$species_name %in% lw_pars$species_name){
-  #      # adjust weight
-  #      if(xdat[i,]$weight_g==0|is.na(xdat[i,]$weight_g)){
-  #        if(xdat[i,]$species_name%in% c('MELIKER', 'MERLMER')){
-  #          a=lw_pars[lw_pars$species_name==xdat[i,]$species_name & lw_pars$sex==xdat[i,]$Sex,]$a
-  #          b=lw_pars[lw_pars$species_name==xdat[i,]$species_name& lw_pars$sex==xdat[i,]$Sex,]$b
-  #        }else{
-  #          a=lw_pars[lw_pars$species_name==xdat[i,]$species_name,]$a
-  #          b=lw_pars[lw_pars$species_name==xdat[i,]$species_name,]$b
-  #        }
-  #        if(xdat[i,]$species_name=='SQUIMAN'|xdat[i,]$species_name=='MELIKER'|xdat[i,]$species_name=='PAPELON'){
-  #          xdat[i,]$weight_g=round((a*xdat[i,]$length_mm^b))
-  #        }
-  #        else{
-  #          xdat[i,]$weight_g=round((a*xdat[i,]$length_mm^b)/1000)
-  #        }
-  #      }
-  #      # adjust length
-  #      if(xdat[i,]$length_mm==0|is.na(xdat[i,]$length_mm)){
-  #        if(xdat[i,]$species_name%in% c('MELIKER', 'MERLMER')){
-  #          a=lw_pars[lw_pars$species_name==xdat[i,]$species_name & lw_pars$sex==xdat[i,]$Sex,]$a
-  #          b=lw_pars[lw_pars$species_name==xdat[i,]$species_name& lw_pars$sex==xdat[i,]$Sex,]$b
-  #        }else{
-  #          a=lw_pars[lw_pars$species_name==xdat[i,]$species_name,]$a
-  #          b=lw_pars[lw_pars$species_name==xdat[i,]$species_name,]$b
-  #        }
-  #        if(xdat[i,]$species_name=='SQUIMAN'|xdat[i,]$species_name=='MELIKER'|xdat[i,]$species_name=='PAPELON'){
-  #          xdat[i,]$length_mm=round((xdat[i,]$weight_g/(a))^(1/b))
-  #        }
-  #        else{
-  #          xdat[i,]$length_mm=round((xdat[i,]$weight_g/(a/1000))^(1/b))
-  #        }
-  #      }
-  #    }
-  #  }
-  #}
-  
   # start of bayesian lw
   if(nrow(xdat)>0){
     for(i in 1:nrow(xdat)){
       # format length weight data 
-      if(xdat[i,]$species_name %in% lw_pars$species_name){
+      if(xdat[i,]$species_name %in% unique(lw.mcmc$specie) &
+         !xdat[i,]$species_name %in% non_target_list){
         i.lwpars=lw.mcmc[lw.mcmc$specie==xdat[i,]$species_name,]
         # adjust weight
         if(xdat[i,]$weight_g==0|is.na(xdat[i,]$weight_g)){
@@ -390,31 +323,254 @@ function1=function(haul, db=NA, year, complete=F){
         if(xdat[i,]$length_mm==0|is.na(xdat[i,]$length_mm)){
           xdat[i,]$length_mm=round(as.numeric(quantile(exp((log(xdat[i,]$weight_g)-i.lwpars$alpha)/i.lwpars$beta)*10,0.5)))
           xdat[i,]$Notes=paste(xdat[i,]$Notes, 'l inferred')
+        }  # end of bayesian lw
+      }else{ 
+        
+        # Start of standard a an b method for species without good lw model results ####
+        
+        # adjust weight
+        if(xdat[i,]$weight_g==0|is.na(xdat[i,]$weight_g)){
+          a=lw_solemon[lw_solemon$species_name==xdat[i,]$species_name,]$a
+          b=lw_solemon[lw_solemon$species_name==xdat[i,]$species_name,]$b
+        
+        if(xdat[i,]$species_name  %in% crustaceans){
+          xdat[i,]$weight_g=round((a*xdat[i,]$length_mm^b))
+        }else{
+          xdat[i,]$weight_g=round((a*xdat[i,]$length_mm^b)/1000)
+          }
+        } 
+        # adjust length
+        if(xdat[i,]$length_mm==0|is.na(xdat[i,]$length_mm)){
+          a=lw_solemon[lw_solemon$species_name==xdat[i,]$species_name,]$a
+          b=lw_solemon[lw_solemon$species_name==xdat[i,]$species_name,]$b
+        
+        if(xdat[i,]$species_name  %in% crustaceans){
+          xdat[i,]$length_mm=round((xdat[i,]$weight_g/(a))^(1/b))
+        }
+        if(!xdat[i,]$species_name  %in% crustaceans){
+          xdat[i,]$length_mm=round((xdat[i,]$weight_g/(a/1000))^(1/b))
+          } 
         }
       }
     }
   }
   
-  
-  
-  # end of bayesian lw
-
-  
   return(list(xdat, weight_not_target, subsamples_target))
   
 } 
 
-# performs checks 
+#**********************************
+# extract and format data benthos
+#**********************************
+function_benthos=function(haul, db=NA, year, complete=F){
+  # to be done
+  print(paste('Processing haul', haul))
+  
+  # load from access ####
+  # load from access ####
+  if(complete==T){
+    MDBPATH <- paste0(wd_acces,"/bio_data_v2024_SOLEMON_BENTHOS_complete.accdb")
+  }else{
+    MDBPATH <- paste0(wd_acces,"/Maschera inserimento SOLEMON_",db,".accdb") 
+  }
+  
+  PATH <- paste0(DRIVERINFO, "DBQ=", MDBPATH)
+  channel <- odbcDriverConnect(PATH)
+  #acctables=sqlTables(channel) # look for tables
+  xdat <- sqlQuery(channel,
+                   paste0("SELECT * FROM [", paste0('cala_', haul), "] ORDER BY [ID]"),
+                   stringsAsFactors = FALSE) # Load data into R dataframe
+  close(channel)
+  rm(channel)
+  
+  # format data art 1: empty cells, NAs, zeros #### 
+  # if(length(unique(xdat$kg_field2))>1){
+  #   xdat$weight_g=xdat$kg_field2*1000
+  #   xdat$kg_field2=0
+  #   print(paste('haul',haul, 'had data in kg field 2. Check'))
+  # }
+  # if(sum(xdat$total_number)==0){
+  # xdat$total_number=xdat$subsample_number  
+  # }
+  
+  #write.csv(xdat, paste0('output/raw_excel/',haul,'.csv'),row.names = F) # new line
+  xdat$idfk=seq(1:nrow(xdat))
+  deleterow=xdat[xdat$length_mm %in% c(NA, 0) & 
+                   xdat$weight_g %in% c(NA, 0) &
+                   is.na(xdat$type_subsample)  &
+                   xdat$total_number %in% c(NA, 0)&
+                   xdat$subsample_number %in% c(NA, 0),]$idfk
+  
+  xdat=xdat[xdat$idfk%ni%deleterow,]
+  print(paste('no records =', nrow(xdat), ', deleted', length(deleterow), 'rows'))
+  
+  xdat=as_tibble(xdat)
+  xdat[is.na(xdat$weight_g),'weight_g']=0
+  xdat[is.na(xdat$Mat),'Mat']=0
+  xdat$total_number=ifelse(is.na(xdat$total_number), 0, xdat$total_number)
+  
+  # format data part 2: fill fields according to the row above ####
+  for(i in 2:nrow(xdat)){
+    # Fill gaps in gear
+    if(is.na(xdat[i,]$gear)){xdat[i,]$gear=xdat[i-1,]$gear}
+    # Fill gaps in species name
+    if(is.na(xdat[i,]$species_name)){xdat[i,]$species_name=xdat[i-1,]$species_name}
+  }
+  xdat=left_join(xdat, species_list, by='species_name') # attach info on target species
+  if(nrow(xdat[is.na(xdat$target),])>0){xdat[is.na(xdat$target),]$target=0}# (name and target [Y/N], then check that no target species is NA)
+  
+  # sex and maturity ####
+  # format data
+  xdat$Sex=as.character(xdat$Sex)
+  xdat[xdat$target==1 & xdat$Sex %ni% c('M', 'F', 'I'),]$Sex='N'
+  
+  # fill crustaceans empty cells for cases when onboard we specify just if females have spermatopores
+  xdat$Mat=ifelse(xdat$species_name%in% c('LIOCDEP', 'PAPELON') &
+                    xdat$Sex=='F' &
+                    xdat$Mat==0, 1, xdat$Mat) 
+  xdat[xdat$Mat%ni%c(1,2,3,4,5,6),]$Mat=NA
+  xdat$Mat=as.character(xdat$Mat)
+  
+  # format maturity scale
+  for(i in 1:nrow(xdat)){
+    if(xdat[i,]$species_name %in% mat_list$SPECIES){
+      xmat=mat_list[mat_list$SPECIES==xdat[i,]$species_name,]
+      xmat=xmat[xmat$SEX==xdat[i,]$Sex,]
+      if(nrow(xmat)==1 & xdat[i,]$Mat %in% c(1,2,3,4,5,6)){
+        xdat[i,]$Mat=paste(xmat$SCALE, xdat[i,]$Mat, sep='-')
+      }
+    }
+  }
+  
+  # look for subsamples of non target species (case of ANADARA, OPHIURE ecc...)
+  subs.nt=xdat[which(xdat$target==0 & xdat$kg_field3>0 & xdat$kg_field1==0),]
+  if(nrow(subs.nt)>0){
+    for(j in 1:nrow(subs.nt)){
+      w_tot=subs.nt[j,]$weight_g
+      subs.nt[j,]$total_number=round(subs.nt[j,]$weight_g*(subs.nt[j,]$subsample_number/(subs.nt[j,]$kg_field3*1000)))
+    }
+    subs.nt=subs.nt%>%
+      dplyr::group_by(gear, species_name)%>%
+      dplyr::summarise(w=sum(weight_g)/1000, n=sum(total_number))
+  }
+  
+  ## look for subsamples of non target species (Case of TURRCOM e APORPES)
+  subs.tur=xdat[which(xdat$target==0 & xdat$kg_field3>0 & xdat$kg_field1>0),]
+  if(nrow(subs.tur)>0){
+    for(j in 1:nrow(subs.tur)){
+      w_tot=subs.tur[j,]$weight_g
+      subs.tur[j,]$weight_g=round(subs.tur[j,]$kg_field3*(subs.tur[j,]$kg_field1/subs.tur[j,]$kg_field2)*1000)
+      subs.tur[j,]$total_number=round(subs.tur[j,]$weight_g*(subs.tur[j,]$subsample_number/(subs.tur[j,]$kg_field3*1000)))
+    }
+    subs.tur=subs.tur%>%
+      dplyr::group_by(gear, species_name)%>%
+      dplyr::summarise(w=sum(weight_g)/1000, n=sum(total_number))
+    subs.tur$n=ifelse(subs.tur$species_name=="SHELLS",0,subs.tur$n)
+    subs.nt=rbind(subs.nt,subs.tur)
+    subs.nt<-subs.nt[subs.nt$species_name!="SHELLS",]
+  }
+  
+  ## summarise weight data for other commercial species ####
+  weight_not_target=xdat[xdat$target!=1 & !xdat$species_name%in% subs.nt$species_name,]%>%
+    dplyr::group_by(gear, species_name)%>%
+    dplyr::summarise(w=sum(weight_g)/1000, n=sum(total_number)) # format weight by species for non target
+  
+  if(nrow(subs.nt)>0){
+    weight_not_target=rbind(weight_not_target, subs.nt)
+  }
+  
+  ## summarise weight data for liocdep ####
+  lioc_data=xdat[xdat$species_name=='LIOCDEP',]
+  if(nrow(lioc_data)==1){
+    lioc_w=lioc_data%>%dplyr::group_by(gear, species_name)%>%
+      dplyr::summarise(w=sum(weight_g)/1000, n=1)
+    weight_not_target=rbind(weight_not_target, lioc_w)
+    
+  }else if(nrow(lioc_data)>1){
+    lioc_w=lioc_data[lioc_data$weight_g>0,]
+    lioc_w=lioc_w%>%dplyr::group_by(gear, species_name)%>%
+      dplyr::summarise(w=sum(weight_g)/1000, n=sum(total_number))
+    lioc_bio=lioc_data[lioc_data$weight_g==0,]
+    weight_not_target=rbind(weight_not_target, lioc_w)
+    xdat=xdat[-which(xdat$species_name=='LIOCDEP'&xdat$weight_g>0),]
+  }
+  
+  # clean conflict between raising and non raising
+  weight_not_target=weight_not_target%>%
+    dplyr::group_by(gear, species_name)%>%
+    dplyr::summarise(w=sum(w), n=sum(n))
+  xdat[xdat$target!=1,]$weight_g=-1
+  
+  # target species ####
+  ## sub-samples of target species (AEQUOPE, mullets etc..) ####
+  data_target=xdat[xdat$target==1&xdat$species_name!='LIOCDEP',]
+  if(nrow(data_target)>0){
+    weight_target=data_target%>%
+      dplyr::group_by(gear, species_name)%>%
+      dplyr::summarise(w=sum(weight_g)/1000, n=n())
+    weight_not_target=rbind(weight_not_target, weight_target)
+  }
+  
+  # remove subsamples of target species from the main dataset
+  xdat=xdat[is.na(xdat$type_subsample),]
+  
+  subsamples_target=NA
+  #xdat=xdat[xdat$target==1,]
+  return(list(xdat, weight_not_target, subsamples_target))
+} 
+
+
+get_tables=function(db=NA, complete=F){
+  if(complete==T){
+    MDBPATH <- paste0(wd_acces,"/bio_data_v2024_SOLEMON_complete.accdb")
+  }else{
+    MDBPATH <- paste0(wd_acces,"/Maschera inserimento SOLEMON_",db,".accdb") 
+  }
+  PATH <- paste0(DRIVERINFO, "DBQ=", MDBPATH)
+  channel <- odbcDriverConnect(PATH)
+  acctables=sqlTables(channel) # look for tables
+  close(channel)
+  tables_check=acctables[grep('ala' ,acctables$TABLE_NAME),]$TABLE_NAME
+  tables_check=tables_check[-grep('template', tables_check)]
+  tables_check=tables_check[-grep('test', tables_check)]
+  return(tables_check)
+}
+
+
+#**********************************
+# performs checks ####
+#**********************************
 function2=function(xdat, haul, year=2024){
   
   xxdat=xdat[[1]]
-  # lw plot target species with the L-W theorethical function########### ### Modified_AP ###
- p_lw=xxdat[xxdat$target==1,]%>%
-   ggplot(aes(x=length_mm, y=weight_g, color=gear))+
-   geom_point()+
-   stat_smooth(aes(x=length_mm, y=weight_g),lty="dashed", geom="line", color="black", se=F, method="nls", method.args = list(formula= y~(a*x^b),start=list(a=0.0001,b=2.5)))+
-   facet_wrap(~species_name, scales='free')+
-   ggtitle(paste('Target species haul', haul)); p_lw
+  
+  # compute lower and higher ci (0.001,0.999) of theoretical weight based on bayesian lw
+  xdat_target<-xxdat[xxdat$target==1,]
+  xdat_target$lo.ci<-NA
+  xdat_target$hi.ci<-NA
+  species_t<-unique(xdat_target$species_name)
+  xdat_target_2<-NULL
+  for(i in 1:length(species_t)){
+    xxdat_target<-xdat_target%>%filter(species_name==species_t[i])
+    posterior_dist<-lw.mcmc%>%filter(specie==species_t[i])
+    for(j in 1:nrow(xxdat_target)){
+      store=exp(as.numeric(mapply(function(mu, sigma) rnorm(n = 1, mean = mu, sd = sigma), 
+                                  (posterior_dist$alpha + posterior_dist$beta * 
+                                     log(xxdat_target[j,]$length_mm/10)),posterior_dist$sigma)))
+      ints=as.numeric(quantile((store), probs = c(0.001,0.999)))
+      xxdat_target[j,]$lo.ci=ints[1]
+      xxdat_target[j,]$hi.ci=ints[2]
+    }
+    
+    xdat_target_2<-rbind(xdat_target_2,xxdat_target)
+  }
+
+  # lw plot target species with the L-W theorethical function########### 
+  p_lw<-ggplot(data=xdat_target_2)+
+    geom_point(aes(x=length_mm, y=weight_g, color=gear))+
+    geom_ribbon(aes(x=length_mm,ymin=lo.ci, ymax=hi.ci), alpha=0.2)+
+    facet_wrap(~species_name, scales='free')+ggtitle(paste('Target species haul', haul))
+  p_lw
  
  ggsave(plot=p_lw, filename = file.path(main_wd, 'output', 'checks', paste0(haul, '_targetlw.png') ), 
         width = 30, height = 20, units='cm')
@@ -492,15 +648,17 @@ function2=function(xdat, haul, year=2024){
 
 }
   
-
-# format trust  
-function3=function(xdat, haul, year, weight_not_target, subsamples_target, catch_sample_disattivati){
+#**********************************
+# format trust
+#**********************************
+function3=function(xdat, haul, year, weight_not_target, subsamples_target){
   survey=paste0('SOLEMON', year)
   # Bio data ####
   bio_data_trust=xdat
   bio_data_trust$Survey=survey
-  bio_data_trust$Area=area
   bio_data_trust$Station=haul
+  bio_data_trust$Station=ifelse(bio_data_trust$Station=="45BIS",as.character("45bis"),bio_data_trust$Station)
+  bio_data_trust$Area=ifelse(bio_data_trust$Station %in% c("45","45bis"),"SLO",area)
   bio_data_trust$Gear=ifelse(bio_data_trust$gear=='A', '1-RAP', '2-RAP')
   bio_data_trust$SampN=1
   bio_data_trust$SpecN=1
@@ -516,7 +674,7 @@ function3=function(xdat, haul, year, weight_not_target, subsamples_target, catch
     dplyr::mutate(MatStage=ifelse(nchar(MatStage)<3,NA,MatStage))
   bio_data_trust$'L(mm)'[bio_data_trust$'L(mm)'==0]<--1
   bio_data_trust$'W(g)'[bio_data_trust$'W(g)'==0]<--1
-  bio_data_trust$Oth=ifelse(is.na(bio_data_trust$Oth), 0,1)
+  bio_data_trust$Oth=ifelse(is.na(bio_data_trust$FishID), 0,2)
   if(haul==18 & survey=='SOLEMON2021'){
     bio_data_trust[bio_data_trust$SpecCode=='SOLEVUL'&!is.na(bio_data_trust$FishID),]$FishID=NA
   }
@@ -532,11 +690,7 @@ function3=function(xdat, haul, year, weight_not_target, subsamples_target, catch
                   InUse='Y',
                   Picts=NA,
                   Notes=NA)
-  if(haul %in% catch_sample_disattivati$Station){
-    catch_sample_disattivati$Gear=ifelse(catch_sample_disattivati$Gear=='A', '1-RAP', '2-RAP')
-    catch_samples[ catch_samples$SpecCode ==catch_sample_disattivati[catch_sample_disattivati$Station==haul,]$SpecCode &
-                     catch_samples$Gear== catch_sample_disattivati[catch_sample_disattivati$Station==haul,]$Gear, ]$InUse='N'
-  }
+
   
   writexl::write_xlsx(catch_samples, file.path(main_wd, 'output', 'trust', 'catch_sample', paste0("Catch_sample_Trust_", haul, ".xlsx") ))
   
@@ -566,14 +720,17 @@ function3=function(xdat, haul, year, weight_not_target, subsamples_target, catch
   
   catch_file_trust=catch_file_trust[,c("gear", "Species", "species_name", 'w','n' )]
   catch_file_trust$Survey=survey
-  catch_file_trust$Area=area
   catch_file_trust$Station=haul
+  catch_file_trust$Station=ifelse(catch_file_trust$Station=="45BIS",as.character("45bis"),
+                                  catch_file_trust$Station)
+  catch_file_trust$Area=ifelse(catch_file_trust$Station%in% c("45","45bis"),"SLO",area)
   catch_file_trust=catch_file_trust%>%dplyr::select(Survey, Area, Station, gear, Species,
                                                     species_name,w,n)
   names(catch_file_trust)=c('Survey' , 'Area', 'Station', 'Gear', 'SpeciesSN', 'Code', 'W(kg)', 'Numb')
   catch_file_trust$RaisF=1
   catch_file_trust$Notes=NA
   catch_file_trust$UserIns=NA
+
   catch_file_trust$Gear=ifelse(catch_file_trust$Gear=='A', '1-RAP', '2-RAP')
   
   writexl::write_xlsx(catch_file_trust, file.path(main_wd, 'output', 'trust', 'catch', paste0("Catch_Trust_", haul, ".xlsx") ))
@@ -582,11 +739,13 @@ function3=function(xdat, haul, year, weight_not_target, subsamples_target, catch
   
 }
 
-
+#**********************************
+# format trust benthos
+#**********************************
 function3_benthos=function(xdat, xdat_benthos,
                            haul, year, 
                            weight_not_target, weight_benthos,info.haul,
-                           subsamples_target, catch_sample_disattivati,
+                           subsamples_target,
                            sampling_type='haul'){
   
   survey=paste0('SOLEMON', year)
@@ -597,8 +756,9 @@ function3_benthos=function(xdat, xdat_benthos,
   
   bio_data_trust=rbind(xdat, xdat_benthos[xdat_benthos$length_mm>0,]) # add individual data included in the benthos data
   bio_data_trust$Survey=survey
-  bio_data_trust$Area=area
   bio_data_trust$Station=haul
+  bio_data_trust$Station=ifelse(bio_data_trust$Station=="45BIS",as.character("45bis"),bio_data_trust$Station)
+  bio_data_trust$Area=ifelse(bio_data_trust$Station %in% c("45","45bis"),"SLO",area)
   bio_data_trust$Gear=ifelse(bio_data_trust$gear=='A', '1-RAP', '2-RAP')
   bio_data_trust$SampN=1
   bio_data_trust$SpecN=1
@@ -631,11 +791,6 @@ function3_benthos=function(xdat, xdat_benthos,
                   InUse='Y',
                   Picts=NA,
                   Notes=NA)
-  if(haul %in% catch_sample_disattivati$Station){
-    catch_sample_disattivati$Gear=ifelse(catch_sample_disattivati$Gear=='A', '1-RAP', '2-RAP')
-    catch_samples[ catch_samples$SpecCode ==catch_sample_disattivati[catch_sample_disattivati$Station==haul,]$SpecCode &
-                     catch_samples$Gear== catch_sample_disattivati[catch_sample_disattivati$Station==haul,]$Gear, ]$InUse='N'
-  }
   
   writexl::write_xlsx(catch_samples, file.path(main_wd, 'output', 'trust', 'catch_sample', paste0("Catch_sample_Trust_", haul, ".xlsx") ))
   
@@ -668,7 +823,7 @@ function3_benthos=function(xdat, xdat_benthos,
   }else{
     extra_w=0
   }
-  
+  benthos_kg=sum(weight_benthos$w)
   if(sampling_type=='haul'){
     # case benthos: the sample is not representative of the haul (fish and litter were already cleaned). This was the method used since 2005
   RF=((info.haul$rapiA_kg - info.haul$rapiA_tara) + (info.haul$rapiD_kg - info.haul$rapiD_tara) - (sum(catch_file_trust$w)-extra_w) -(info.haul$litter_kg))/info.haul$benthos_kg # standard
@@ -680,17 +835,12 @@ function3_benthos=function(xdat, xdat_benthos,
   RF.d=(info.haul$rapiD_kg - info.haul$rapiD_tara)/info.haul$benthos_kg 
   }
   
- 
-  
   if(any(weight_benthos$species_name %in% c(target_species$species_name, shells))){
     
     if(any(catch_file_trust$species_name%in% weight_benthos$species_name)){
       cat('found case benthos to be handled')
       #break
       }
-    
- 
-  
   }
   
   catch_file_trust=rbind(catch_file_trust, weight_benthos)
@@ -701,8 +851,11 @@ function3_benthos=function(xdat, xdat_benthos,
   
   catch_file_trust=catch_file_trust[,c("gear", "Species", "species_name", 'w','n' )]
   catch_file_trust$Survey=survey
-  catch_file_trust$Area=area
   catch_file_trust$Station=haul
+  catch_file_trust$n=ifelse(catch_file_trust$n==0,-1,catch_file_trust$n)
+  catch_file_trust$Station=ifelse(catch_file_trust$Station=="45BIS",as.character("45bis"),
+                                  catch_file_trust$Station)
+  catch_file_trust$Area=ifelse(catch_file_trust$Station%in% c("45","45bis"),"SLO",area)
   catch_file_trust=catch_file_trust%>%dplyr::select(Survey, Area, Station, gear, Species,
                                                     species_name,w,n)
   catch_file_trust$RaisF=1
@@ -720,7 +873,7 @@ function3_benthos=function(xdat, xdat_benthos,
     #}
     
     if(x.change.id==1){
-      # case 1: some individuals are in benthos, but their weight shall not be raised because htey were also sampled in commercial
+      # case 1: some individuals are in benthos, but their weight shall not be raised because they were also sampled in commercial
       catch_file_trust[catch_file_trust$gear=='D' & catch_file_trust$species_name%in% weight_not_target$species_name & catch_file_trust$RaisF>1 ,]$RaisF=1
       catch_file_trust=catch_file_trust%>%
         dplyr::group_by(Survey, Area, Station,gear,Species,species_name)%>%
@@ -733,9 +886,6 @@ function3_benthos=function(xdat, xdat_benthos,
                             catch_file_trust$species_name %in% catch_file_trust[catch_file_trust$gear=='A',]$species_name&
                             catch_file_trust$RaisF>1,]$RaisF=RF.d
     }
-
-    
-    
   }
   
   names(catch_file_trust)=c('Survey' , 'Area', 'Station', 'Gear', 'SpeciesSN', 'Code', 'W(kg)', 'Numb', 'RF')
@@ -752,7 +902,9 @@ function3_benthos=function(xdat, xdat_benthos,
   
 }
 
+#**********************************
 # save pdf 
+#**********************************
 function4=function(trustdat, year, area, haul){
   survey=paste0('SOLEMON', year)
   
@@ -842,212 +994,4 @@ load_minilog=function(main_wd, minilog, dates){
   
   
 }
-  
-
-### additions: check that columns are filled in the same way
-
-function_benthos=function(haul, db=NA, year, complete=F){
-  
-
-  # to be done
-  print(paste('Processing haul', haul))
-  
-  # load from access ####
-  # load from access ####
-  if(complete==T){
-    MDBPATH <- paste0(wd_acces,"/bio_data_v2024_SOLEMON_BENTHOS_complete.accdb")
-  }else{
-    MDBPATH <- paste0(wd_acces,"/Maschera inserimento SOLEMON_",db,".accdb") 
-  }
-  
-  PATH <- paste0(DRIVERINFO, "DBQ=", MDBPATH)
-  channel <- odbcDriverConnect(PATH)
-  #acctables=sqlTables(channel) # look for tables
-  xdat <- sqlQuery(channel,
-                   paste0("SELECT * FROM [", paste0('cala_', haul), "] ORDER BY [ID]"),
-                   stringsAsFactors = FALSE) # Load data into R dataframe
-  close(channel)
-  rm(channel)
-  
-  # format data art 1: empty cells, NAs, zeros #### 
-  if(length(unique(xdat$kg_field2))>1){
-    xdat$weight_g=xdat$kg_field2*1000
-    xdat$kg_field2=0
-    print(paste('haul',haul, 'had data in kg field 2. Check'))
-  }
-  if(sum(xdat$total_number)==0){
-  xdat$total_number=xdat$subsample_number  
-  }
-  
-  #write.csv(xdat, paste0('output/raw_excel/',haul,'.csv'),row.names = F) # new line
-  xdat$idfk=seq(1:nrow(xdat))
-  deleterow=xdat[xdat$length_mm %in% c(NA, 0) & 
-                   xdat$weight_g %in% c(NA, 0) &
-                   is.na(xdat$type_subsample)  &
-                   xdat$total_number %in% c(NA, 0),]$idfk
-  
-  xdat=xdat[xdat$idfk%ni%deleterow,]
-  print(paste('no records =', nrow(xdat), ', deleted', length(deleterow), 'rows'))
-  
-  xdat=as_tibble(xdat)
-  xdat[is.na(xdat$weight_g),'weight_g']=0
-  xdat[is.na(xdat$Mat),'Mat']=0
-  xdat$total_number=ifelse(is.na(xdat$total_number), 0, xdat$total_number)
-  
-  # format data part 2: fill fields according to the row above ####
-  for(i in 2:nrow(xdat)){
-    # Fill gaps in gear
-    if(is.na(xdat[i,]$gear)){xdat[i,]$gear=xdat[i-1,]$gear}
-    # Fill gaps in species name
-    if(is.na(xdat[i,]$species_name)){xdat[i,]$species_name=xdat[i-1,]$species_name}
-    # Fill gaps in Sex
-    if(xdat[i,]$species_name=='MELIKER' & is.na(xdat[i,]$Sex)){xdat[i,]$Sex=xdat[i-1,]$Sex}
-    if(xdat[i,]$species_name=='SQUIMAN' & is.na(xdat[i,]$Sex)){xdat[i,]$Sex=xdat[i-1,]$Sex}
-  }
-  xdat=left_join(xdat, species_list, by='species_name') # attach info on target species
-  if(nrow(xdat[is.na(xdat$target),])>0){xdat[is.na(xdat$target),]$target=0}# (name and target [Y/N], then check that no target species is NA)
-  
-  # sex and maturity ####
-  # format data
-  xdat$Sex=as.character(xdat$Sex)
-  xdat[xdat$target==1 & xdat$Sex %ni% c('M', 'F', 'I'),]$Sex='N'
-  
-  # fill crustaceans empty cells for cases when onboard we specify just if females have spermatopores
-  xdat$Mat=ifelse(xdat$species_name%in% c('LIOCDEP', 'PAPELON') &
-                    xdat$Sex=='F' &
-                    xdat$Mat==0, 1, xdat$Mat) 
-  xdat[xdat$Mat%ni%c(1,2,3,4,5,6),]$Mat=NA
-  xdat$Mat=as.character(xdat$Mat)
-  
-  # format maturity scale
-  for(i in 1:nrow(xdat)){
-    if(xdat[i,]$species_name %in% mat_list$SPECIES){
-      xmat=mat_list[mat_list$SPECIES==xdat[i,]$species_name,]
-      xmat=xmat[xmat$SEX==xdat[i,]$Sex,]
-      if(nrow(xmat)==1 & xdat[i,]$Mat %in% c(1,2,3,4,5,6)){
-        xdat[i,]$Mat=paste(xmat$SCALE, xdat[i,]$Mat, sep='-')
-      }
-    }
-  }
-  
-  # look for subsamples of non target species
-  subs.nt=xdat[which(xdat$target==0 & xdat$kg_field3>0),]
-  if(nrow(subs.nt)>0){
-    for(j in 1:nrow(subs.nt)){
-      w_tot=subs.nt[j,]$weight_g
-      subs.nt[j,]$total_number=round(subs.nt[j,]$weight_g*(subs.nt[j,]$subsample_number/(subs.nt[j,]$kg_field3*1000)))
-    }
-    subs.nt=subs.nt%>%
-      dplyr::group_by(gear, species_name)%>%
-      dplyr::summarise(w=sum(weight_g)/1000, n=sum(total_number))
-  }
-  
-  ## summarise weight data for other commercial species ####
-  weight_not_target=xdat[xdat$target!=1 & xdat$species_name%ni% subs.nt,]%>%
-    dplyr::group_by(gear, species_name)%>%
-    dplyr::summarise(w=sum(weight_g)/1000, n=sum(total_number)) # format weight by species for non target
-  
-  if(nrow(subs.nt)>0){
-    weight_not_target=rbind(weight_not_target, subs.nt)
-  }
-  
-  ## summarise weight data for liocdep ####
-  lioc_data=xdat[xdat$species_name=='LIOCDEP',]
-  if(nrow(lioc_data)==1){
-    lioc_w=lioc_data%>%dplyr::group_by(gear, species_name)%>%
-      dplyr::summarise(w=sum(weight_g)/1000, n=1)
-    weight_not_target=rbind(weight_not_target, lioc_w)
-    
-  }else if(nrow(lioc_data)>1){
-    lioc_w=lioc_data[lioc_data$weight_g>0,]
-    lioc_w=lioc_w%>%dplyr::group_by(gear, species_name)%>%
-      dplyr::summarise(w=sum(weight_g)/1000, n=sum(total_number))
-    lioc_bio=lioc_data[lioc_data$weight_g==0,]
-    weight_not_target=rbind(weight_not_target, lioc_w)
-    xdat=xdat[-which(xdat$species_name=='LIOCDEP'&xdat$weight_g>0),]
-  }
-  
-  # clean conflict between raising and non raising
-  weight_not_target=weight_not_target%>%
-    dplyr::group_by(gear, species_name)%>%
-    dplyr::summarise(w=sum(w), n=sum(n))
-  xdat[xdat$target!=1,]$weight_g=-1
-  
-  # target species ####
-  ## sub-samples of target species (AEQUOPE, mullets etc..) ####
-  data_target=xdat[xdat$target==1&xdat$species_name!='LIOCDEP',]
-  if(nrow(data_target)>0){
-   weight_target=data_target%>%
-      dplyr::group_by(gear, species_name)%>%
-      dplyr::summarise(w=sum(weight_g)/1000, n=n())
-   weight_not_target=rbind(weight_not_target, weight_target)
-  }
-  
-  # remove subsamples of target species from the main dataset
-  xdat=xdat[is.na(xdat$type_subsample),]
-  
-  ## Fill gaps for target: lw ####
-  if(nrow(xdat)>0){
-    for(i in 1:nrow(xdat)){
-      # format length weight data 
-      if(xdat[i,]$species_name %in% lw_pars$species_name){
-        # adjust weight
-        if(xdat[i,]$weight_g==0|is.na(xdat[i,]$weight_g)){
-          if(xdat[i,]$species_name%in% c('MELIKER', 'MERLMER')){
-            a=lw_pars[lw_pars$species_name==xdat[i,]$species_name & lw_pars$sex==xdat[i,]$Sex,]$a
-            b=lw_pars[lw_pars$species_name==xdat[i,]$species_name& lw_pars$sex==xdat[i,]$Sex,]$b
-          }else{
-            a=lw_pars[lw_pars$species_name==xdat[i,]$species_name,]$a
-            b=lw_pars[lw_pars$species_name==xdat[i,]$species_name,]$b
-          }
-          if(xdat[i,]$species_name=='SQUIMAN'|xdat[i,]$species_name=='MELIKER'|xdat[i,]$species_name=='PAPELON'){
-            xdat[i,]$weight_g=round((a*xdat[i,]$length_mm^b))
-          }
-          else{
-            xdat[i,]$weight_g=round((a*xdat[i,]$length_mm^b)/1000)
-          }
-        }
-        # adjust length
-        if(xdat[i,]$length_mm==0|is.na(xdat[i,]$length_mm)){
-          if(xdat[i,]$species_name%in% c('MELIKER', 'MERLMER')){
-            a=lw_pars[lw_pars$species_name==xdat[i,]$species_name & lw_pars$sex==xdat[i,]$Sex,]$a
-            b=lw_pars[lw_pars$species_name==xdat[i,]$species_name& lw_pars$sex==xdat[i,]$Sex,]$b
-          }else{
-            a=lw_pars[lw_pars$species_name==xdat[i,]$species_name,]$a
-            b=lw_pars[lw_pars$species_name==xdat[i,]$species_name,]$b
-          }
-          if(xdat[i,]$species_name=='SQUIMAN'|xdat[i,]$species_name=='MELIKER'|xdat[i,]$species_name=='PAPELON'){
-            xdat[i,]$length_mm=round((xdat[i,]$weight_g/(a))^(1/b))
-          }
-          else{
-            xdat[i,]$length_mm=round((xdat[i,]$weight_g/(a/1000))^(1/b))
-          }
-        }
-      }
-    }
-  }
-  subsamples_target=NA
-  #xdat=xdat[xdat$target==1,]
-  return(list(xdat, weight_not_target, subsamples_target))
-  
-} 
-
-
-get_tables=function(db=NA, complete=F){
-  if(complete==T){
-    MDBPATH <- paste0(wd_acces,"/bio_data_v2024_SOLEMON_complete.accdb")
-  }else{
-    MDBPATH <- paste0(wd_acces,"/Maschera inserimento SOLEMON_",db,".accdb") 
-  }
-  PATH <- paste0(DRIVERINFO, "DBQ=", MDBPATH)
-  channel <- odbcDriverConnect(PATH)
-  acctables=sqlTables(channel) # look for tables
-  close(channel)
-  tables_check=acctables[grep('ala' ,acctables$TABLE_NAME),]$TABLE_NAME
-  tables_check=tables_check[-grep('template', tables_check)]
-  tables_check=tables_check[-grep('test', tables_check)]
-  return(tables_check)
-}
-
-
   

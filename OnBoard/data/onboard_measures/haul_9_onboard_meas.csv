@@ -1,2 +1,2 @@
-"Gear","Species","Lenght","Sex","Mat","Total weight","Number"
-"A","SCYOCAN",451,"M",1,0.1,NA
+"Gear","Species","Lenght_mm","Weight_g","Sex","Mat","Number","Total weight_g"
+"A","SCYOCAN",451,100,"M",1,NA,NA
