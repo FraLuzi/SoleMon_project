@@ -5,12 +5,12 @@ library(dplyr)
 library(magrittr)
 library(ggplot2)
 
-target.dir="C:/Users/a.palermino/OneDrive - CNR/Assegno Scarcella/Solemon/Solemon 2024/OnBoard"
+target.dir="C:/Users/a.palermino/OneDrive - CNR/github/SoleMon_project/OnBoard"
 
 ### catch sample data ####
 '%ni%'=Negate('%in%')
 setwd(file.path(target.dir, "output/trust/catch_sample"))
-target.list=read_excel("C:/Users/a.palermino/OneDrive - CNR/Assegno Scarcella/Solemon/Solemon 2024/OnBoard/data/target_species.xlsx")
+target.list=read_excel("C:/Users/a.palermino/OneDrive - CNR/github/SoleMon_project/OnBoard/data/target_species.xlsx")
 xfiles=list.files()
 dat_store=NA
 for(k in 1:length(xfiles)){
@@ -125,8 +125,8 @@ ggplot(data=mean_n[mean_n$Code %in% target.list$species_name,])+
 ### Bio data ####
 rm(list = ls())
 '%ni%'=Negate('%in%')
-setwd("C:/Users/a.palermino/OneDrive - CNR/Assegno Scarcella/Solemon/Solemon 2024/OnBoard/output/trust/bio")
-target.dir="C:/Users/a.palermino/OneDrive - CNR/Assegno Scarcella/Solemon/Solemon 2024/OnBoard"
+setwd("C:/Users/a.palermino/OneDrive - CNR/github/SoleMon_project/OnBoard/output/trust/bio")
+target.dir="C:/Users/a.palermino/OneDrive - CNR/github/SoleMon_project/OnBoard"
 lw_pars=read_excel("../../../data/lw_pars.xlsx")
 names(lw_pars)[c(1,2)]=c('SpecCode', 'Sex')
 
