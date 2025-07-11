@@ -14,7 +14,7 @@ library(stringr)
 library(grid)
 rm(list = ls())
 '%ni%'=Negate('%in%')
-wd_acces="C:/Users/a.palermino/OneDrive - CNR/Assegno Scarcella/Solemon/Solemon 2024/OnBoard/access"
+wd_acces="C:/Users/a.palermino/OneDrive - CNR/github/SoleMon_project/OnBoard/access"
 DRIVERINFO <- "Driver={Microsoft Access Driver (*.mdb, *.accdb)};"
 
 source_file <- paste0(wd_acces,"/bio_data_v2024_SOLEMON_template.accdb")
@@ -80,7 +80,7 @@ hauls_db_FRA=tables_check2[tables_check2$original_name %ni% common_hauls,]
 hauls_db_FRA$id=seq(1:nrow(hauls_db_FRA))
 
 # find hauls with data taken onboard and to be added
-dir.target.ob="C:/Users/a.palermino/OneDrive - CNR/Assegno Scarcella/Solemon/Solemon 2024/OnBoard/data/onboard_measures"
+dir.target.ob="C:/Users/a.palermino/OneDrive - CNR/github/SoleMon_project/OnBoard/data/onboard_measures"
 x.files.ob=data.frame(target.file=list.files(path=dir.target.ob))
 x.files.ob$hauls.ob=str_remove(str_remove(x.files.ob$target.file,'_onboard_meas.csv'),'haul_')
 
@@ -90,7 +90,7 @@ for(icheck in 1:nrow(hauls_db_ENA)){
   
   haul=hauls_db_ENA[icheck, ]$format_name
   haul.name=paste('cala',hauls_db_ENA[icheck, ]$original_name,sep='_')
-  cat(haul.name)
+  cat(paste0(haul.name," "))
   # import table 1
   MDBPATH <- paste0(wd_acces,"/Maschera inserimento SOLEMON_2024_ENA.accdb")
   PATH <- paste0(DRIVERINFO, "DBQ=", MDBPATH)
@@ -143,7 +143,7 @@ for(icheck in 1:nrow(hauls_db_FRA)){
   
   haul=hauls_db_FRA[icheck, ]$format_name
   haul.name=paste('cala',hauls_db_FRA[icheck, ]$original_name,sep='_')
-  cat(haul.name)
+  cat(paste0(haul.name," "))
   # import table 1
   MDBPATH <- paste0(wd_acces,"/Maschera inserimento SOLEMON_2024_FRA.accdb")
   PATH <- paste0(DRIVERINFO, "DBQ=", MDBPATH)
@@ -201,7 +201,7 @@ for(icheck in 1:length(common_hauls)){
   haulbis=tables_check2[tables_check2$original_name==common_hauls[icheck], ]$format_name
   haul.name=paste('cala',tables_check[tables_check$original_name==common_hauls[icheck], ]$original_name,sep='_')
   
-  cat(haul.name)
+  cat(paste0(haul.name," "))
   # Table DB BIS
   MDBPATH <- paste0(wd_acces,"/Maschera inserimento SOLEMON_2024_FRA.accdb")
   PATH <- paste0(DRIVERINFO, "DBQ=", MDBPATH)
@@ -279,7 +279,7 @@ tables.oto=get_tables('2024_OTO')
 for(icheck in 1:length(store.hauls)){
   i.haul=store.hauls[[icheck]]
   i.nm=names(store.hauls)[icheck]
-  cat(i.nm)
+  cat(paste0(i.nm," "))
   if(i.nm %in% tables.oto){
     MDBPATH <- paste0(wd_acces,"/Maschera inserimento SOLEMON_2024_OTO.accdb")
     PATH <- paste0(DRIVERINFO, "DBQ=", MDBPATH)
@@ -313,7 +313,7 @@ tab.1=tab.1[-grep('test', tab.1)]
 
 for(icheck in 1:length(tab.1)){
     i.nm=tab.1[icheck]
-    cat(i.nm)
+    cat(paste0(i.nm," "))
     MDBPATH <- paste0(wd_acces,"/Maschera inserimento SOLEMON_2024_BENTHOS_FRA.accdb")
     PATH <- paste0(DRIVERINFO, "DBQ=", MDBPATH)
     channel <- odbcDriverConnect(PATH)
@@ -333,7 +333,7 @@ tab.2=tab.2[-grep('test', tab.2)]
 
 for(icheck in 1:length(tab.2)){
   i.nm=tab.2[icheck]
-  cat(i.nm)
+  cat(paste0(i.nm," "))
   MDBPATH <- paste0(wd_acces,"/Maschera inserimento SOLEMON_2024_ENA_BENTHOS.accdb")
   PATH <- paste0(DRIVERINFO, "DBQ=", MDBPATH)
   channel <- odbcDriverConnect(PATH)
@@ -351,7 +351,7 @@ for(icheck in 1:length(tab.2)){
 for(icheck in 1:length(benthos.dat)){
   i.haul=benthos.dat[[icheck]]
   i.nm=names(benthos.dat)[icheck]
-  cat(i.nm)
+  cat(paste0(i.nm," "))
 
   MDBPATH <- paste0(wd_acces,"/bio_data_v2024_SOLEMON_BENTHOS_complete.accdb")
   PATH <- paste0(DRIVERINFO, "DBQ=", MDBPATH)

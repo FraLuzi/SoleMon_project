@@ -16,7 +16,7 @@ dat_store=NA
 for(k in 1:length(xfiles)){
   dat_store=rbind(dat_store,read_excel(xfiles[k]) )
 }
-dat_store=dat_store[!is.na(dat_store$Survey),]%>%filter(Station!="test")
+dat_store=dat_store[!is.na(dat_store$Survey),]%>%filter(Station!="test|45BIS")
 writexl::write_xlsx(dat_store, "CatchSample_data.xlsx")
 
 
@@ -127,14 +127,11 @@ rm(list = ls())
 '%ni%'=Negate('%in%')
 setwd("C:/Users/a.palermino/OneDrive - CNR/github/SoleMon_project/OnBoard/output/trust/bio")
 target.dir="C:/Users/a.palermino/OneDrive - CNR/github/SoleMon_project/OnBoard"
-lw_pars=read_excel("../../../data/lw_pars.xlsx")
-names(lw_pars)[c(1,2)]=c('SpecCode', 'Sex')
-
 
 xfiles=list.files()
 dat_store=NA
 for(k in 1:length(xfiles)){
-  dat_store=rbind(dat_store,read_excel(xfiles[k]) )
+  dat_store=rbind(dat_store,read_excel(xfiles[k]))
 }
 dat_store=dat_store[!is.na(dat_store$Survey),]%>%filter(Station!="test")
 writexl::write_xlsx(dat_store, "Bio_data.xlsx")
@@ -229,12 +226,4 @@ write.csv(suspicious.data, paste0(target.dir,'/output/edits/', target.species, '
 dat.sole$hlt=ifelse(dat.sole$id%in%c(259),1,0)
 ggplot(data=dat.sole)+
   geom_point(aes(x=l_mm, y=w_g, color=factor(hlt), size=factor(hlt)))
-
-
-
-target.dir
-
-
-
-
 

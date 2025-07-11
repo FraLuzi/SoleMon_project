@@ -17,7 +17,7 @@ rm(list = ls())
 #               ifelse(Sys.info()[['user']]=="e.armelloni", "C:/Users/e.armelloni/OneDrive/Lezioni/Lavoro#/Solemon/github/SoleMon_project/OnBoard", 
 #                      ifelse(Sys.info()[['user']]=="Franc", "C:/Users/Franc/OneDrive/Desktop/solemon/2022#/raccolta_dati", NA))) 
 #
-main_wd="C:/Users/a.palermino/OneDrive - CNR/Assegno Scarcella/Solemon/Solemon 2024/OnBoard"
+main_wd="C:/Users/a.palermino/OneDrive - CNR/github/SoleMon_project/OnBoard"
 setwd(main_wd)
 source('R/functions_access_v2024.R')
 
@@ -73,8 +73,8 @@ for(xhaul in 1:length(hauls.need)){
   #          haul=str_remove( hauls.need[xhaul] ,'cala_'))
   
   if(str_remove( hauls.need[xhaul] ,'cala_')=='45BIS'){
-    hauldata[[3]]$w=c(0.361,1.082)
-    hauldata[[3]]$n=c(72,155)
+    # hauldata[[3]]$w=c(0.361,1.082)
+    # hauldata[[3]]$n=c(72,155)
     trustdat=function3(xdat=hauldata[[1]], 
                        haul=haul, 
                        year = year, 

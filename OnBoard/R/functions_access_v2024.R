@@ -252,8 +252,7 @@ function1=function(haul, db=NA, year, complete=F){
       if(subsamples_target[k,]$total_number %in% c(NA,0)){
         # reconstruct number and weight of the subsample
         measured_animals=xdat[xdat$species_name==subsamples_target[k,]$species_name&
-                                xdat$gear==subsamples_target[k,]$gear &
-                                is.na(xdat$type_subsample),]
+                                xdat$gear==subsamples_target[k,]$gear,]
         meas_grams=sum(measured_animals$weight_g)
         meas_n=nrow(measured_animals)
         
