@@ -1,0 +1,552 @@
+---
+title: "SoleMon data handling handbook version 2025"
+author: ""
+date: '2025-07-02'
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+---
+
+```{r setup, include=FALSE}
+library(readxl)
+library(tidyverse)
+library(kableExtra)
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Data collection onboard
+
+The haul sheet is an Excel spreadsheet consisting of five sheets:\
+- **Station**
+- **NotesCala**
+- **Samples onboard**
+- **Species**
+- **Notes for compilation**
+
+## Station
+
+Here the characteristics of the haul should be collcted as follow:\
+
+- **Station**: station number
+- **DataTime**: date in the following format: "DAY/MONTH/YEAR"
+- **HourTimeStart**: start time of the haul in HOURS:MINUTES
+- **Lat(°)Start**: Latitute degrees (e.g. 45) of the haul deployment
+- **Lat(')Start**: Latitute primes and decimals (e.g. 36.123) of the haul deployment
+- **Lon(°)Start**: Longitude degrees (e.g. 12) of the haul deployment
+- **Lon(')Start**: Latitute primes and decimals (e.g. 48.151) of the haul deployment
+- **Wal(m)**: Length of the cables
+- **Depth Start (m)**: Depth at the start of the haul
+- **Speed (kn)**: trawl speed
+- **Route**: Route in degrees
+- **WindDirection**: follow the code on the sheet "Note di compilazione"
+- **SeaCondition**: follow the code on the sheet "Note di compilazione"
+- **WeatherCond**: follow the code on the sheet "Note di compilazione"
+- **BottomType**: Main benthonic species composition, according to Medits codes  (e.g. ANADTRA)
+- **Notes**: any further note (e.g. twisted cables)
+- **HourTimeStart**: start time of the haul in HOURS:MINUTES
+- **Lat(°)End**: Latitute degrees (e.g. 45) of the end of the haul 
+- **Lat(')End**: Latitute primes and decimals (e.g. 36.123) of the end of the haul
+- **Lon(°)End**: Longitude degrees (e.g. 12) of the end of the haul
+- **Lon(')End**: Latitute primes and decimals (e.g. 48.151) of the end of the haul
+- **Depth End (m)**: Depth at the end of the haul
+
+
+They have also been uploaded to the ‘Notes for compilation’ page.
+
+![Figure 1: Station](C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/other/Station.png)
+
+## NotesCala
+
+This sheet must indicate:
+
+- **WRapA(kg)**: the weight of rapid A
+- **Tara A (kg)**: the respective tare weight, if present;
+- **WRapD(kg)**: the weight of rapid A
+- **Tara D (kg)**: the respective tare weight, if present;
+- **CodBenthos**:the code inserted inside the benthos bag, which will be used to trace it back to the relevant fishing ground;
+- **WBenthos(kg)**:the weight of the benthos bag, which must be at least 6 kg;
+- **Notes Benthos**: any notes of benthos for example the presence of a species;
+- **Litter**: the code inserted in the litter bag to trace it back to the fishing ground;
+- **Litter_saccata(kg)**: the weight of the litter in the bag;
+- **Litter_gabbia(kg)**: the weight of very heavy litter (e.g.: a large log or a large steel pole). This should be indicated in a separate section as it would affect the RF calculation.
+- **Notes**: any notes;
+- **Notes shells**: indicate here whether certain commercial species must be derived from the benthos bag (e.g. BOLINUS);
+
+**IMPORTANT: If the catch contains large numbers of commercial shells such as Aequipecten opercularis, Flexopecten glaber, Bolinus brandaris, Hexaplex trunculus, Rapana venosa, it is advisible to estimate them from benthos. In case of big amount of shells, when it is feasible to collect all the individuals of one or more "shell" commercial species, please use the samples onboard sheet to collect the data and DO NOT bring it in lab. Conversely, if they are few, they can be collected with the other commercial species.**
+
+![Figure 2: NotesCala](C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/other/NotesCala.png)
+
+## Samples onboard
+
+This sheet should be used to record the single species data collected onboard as follow:
+
+- **Gear**: Geard ID (A or D)
+- **Species**: Use the drop-down menu to select the species
+- **Length_mm**: to be filled only in case of individual length data collection
+- **Weight_g**: to be filled only in case of individual weight data collection. If it is not possible to collect individual weight for target species leave it blank and it will be estimate in post processing. 
+Therefore, DO NOT COLLECT total weight in case of commercial species with single measurements.
+- **Sex**: to be filled only in case of individual data collection (M, I or F)
+- **Mat**: to be filled only in case of individual data collection using the correct scale based on species
+- **Number**: to be filled only in case of species without single individual measurements (e.g. BOLINUS). If a proportion is required, calculate it on board and report the final result
+- **Total weight_g**: to be filled in case of counted number of individuals (e.g. BOLINUS) or in case of single length measurements collected for secondary species (e.g. ARNOLAT). In the second case please insert total weight in correspondence with the last length measurement.
+
+![Figure 3: samples_onboard](C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/other/samples_onboard.png)
+
+## Species
+
+This sheet contains the list of species that can be eventually collected onboard used for the drop-down menu in "Samples onboard" sheet.
+
+![Figure 4: Species](C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/other/Species.png)
+
+# Access file creation and structure
+
+## Starting a new access file
+
+Data collected onboard are stored in access files, located in the "OnBoard/access" subfolder. Ideally, a maximum of 20 hauls should be stored in a .accdb file.
+**IMPORTANT: in case the data collection is done in parallel over multiple laptops, the "OnBoard" folder must be renamed with unique identifiers (e.g.: OnBoard_2024_PLE). Instructions to set up a folder on a new laptop are reported in the repository main page**
+
+To start a new file, copy the template version, which in 2024 it is called "bio_data_v2024_SOLEMON_template.accdb", paste it in the same "OnBoard/access" (or OnBoard_2024_PLE/access) subfolder and rename it as "bio_data_v2024_SOLEMON_YEAR_N.accdb", where YEAR is the reporting year and N is a progressive number. Example: "**bio_data_v2024_SOLEMON_2024_1.accdb**" . *It does not matter if parts of the same haul are in different files, this is handled in post-processing. It does not matters if access with the same name are located in different laptops, this is handled in post processing*.
+
+## Starting a new haul
+
+Each access file contains a template sheet, called "cala_template". To start a new haul, copy the template sheet, paste it and rename it as "cala_x", where *x* is the haul number. Example: **cala_1**; cala_7bis. *It does not matter if parts of the same haul are in different files, this is handled in post-processing*.
+
+### Haul sheet Structure
+
+The structure of the sheets, in 2024, is according to Figure1. In detail:\
+
+-   **gear**: gear code. Accepts A and D.
+-   **species_name**: solemon code
+-   **length_mm**: length of the individual, in millimeters
+-   **weight_g**: weight of the individuals, in grams. This also host the cumulative weight for some species, refer to "deal with cumulative data" section for further details.
+-   **Sex**: required only for target species, accepts F, M, I. Leave empty if sex data not required
+-   **Mat**: required only for target species, just specify the stage (1, 2, etc..). Exceptions for crustaceans: refer to section "cr"
+-   **id_specimen**: fill for specimens for which detailed samples (otolit, genetic etc.) were taken. It accepts numbers and letters. When filled a serial "fishID" number would be generated.
+-   **length_field2**: disc length for elasmobranchs; free spot for other species
+-   **length_field3**: disc width for elasmobranchs; free spot for other species
+-   **total_number**: use this only when the total number is the real total number (no subsample)
+-   **subsample_number**: placeholder for subsamples. The compilation depends on the case. read handbook
+-   **kg_field1**: weight in kilograms, placeholder for cumulative number and subsamples. The compilation depends on the case
+-   **kg_field2**: weight in kilograms, placeholder for cumulative number and subsamples. The compilation depends on the case
+-   **kg_field2**: weight in kilograms, placeholder for cumulative number and subsamples. The compilation depends on the case
+-   **haul_weight**: weight of the haul in kilograms. The need for compilation depends on the case
+-   **type_subsample**: accepts values "C1_haul", "C2_species","C3_benthos", "C4_multiple", "other". The compilation depends on the case.
+-   **Notes**: accept notes of any kind.
+
+![Figure 2: Example of the structure of the access file](C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/other/header_acces.png)
+
+### .accdb auto compilation general details
+
+Auto compilation applies to some column of the access file. This mean that in the processing of the table, to empty cells is assigned the first available data that is found in the previous rows. When collecting data, for these column you need to specify the value just for the first observation, then you should fill the value again only when this change. These columns are:
+
+-   **gear**
+-   **species_name**
+-   **sex** (only for crustaceans)
+
+# Collecting data
+
+## Standard procedure
+
+Standard procedure applies when all the individuals for a given species are collected and reported
+
+### Target species
+
+When reporting data for target species you should use only the first 7 columns. Of these, the columns *gear* and *species_name* autocompiles according to the first record inserted. This mean that you should write in these columns only the first time you report an observation (i.e.: first record of a gear, first record of a species). The column *id_specimen* serves to store any kind of individual id (e.g.: otholits code, genetic samples).
+
+![Figure 3: example of compilation for target species species](C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/other/target.png){width="600" height="100" style="display: block; margin: 0 auto"}
+
+### Elasmobranchs
+
+When reporting data for elasmobranchs you should use only the first 9 columns. Of these, the columns *gear* and *species_name* autocompiles according to the first record inserted. This mean that you should write in these columns only the first time you report an observation (i.e.: first record of a gear, first record of a species). The column *id_specimen* serves to store any kind of individual id (e.g.: otholits code, genetic samples). Refer to the Figure 4 for reporting the 3 length measures
+
+![Figure 4: example of compilation for elasmobranchs species](C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/other/elas.png){width="500" height="400" style="display: block; margin: 0 auto"}
+
+### Other commercial species
+
+When reporting data for other commercial species you should use only the first 4 columns. Of these, the columns *gear* and *species_name* autocompiles according to the first record inserted. This mean that you should write in these columns only the first time you report an observation (i.e.: first record of a gear, first record of a species).
+
+For this species category are recorded individual length and cumulative weight. The cumulative weight should be reported in the last record, as in Figure 5.
+
+![Figure 5: example of compilation for other commercial species](C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/other/other.png){width="500" height="100" style="display: block; margin: 0 auto"}
+
+### Shellfishes (when all the individuals are sampled)
+
+When reporting data for shellfishes (MUREBRA, HEXATRU, OSTREDU) you should use the columns as reported in Figure 6. Of these, the columns *gear* and *species_name* autocompiles according to the first record inserted. This mean that you should write in these columns only the first time you report an observation (i.e.: first record of a gear, first record of a species).
+
+NB: in case of subsamples, refer to the dedicated section
+
+![Figure 6: example of compilation for shellfishes species](C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/other/shell.png){width="1200" height="50" style="display: block; margin: 0 auto"}
+### Benthos
+When reporting benthos data, the columns shown in Figure 6 should be used. Of these, the columns *gear* and *species_name* autocompiles according to the first record inserted. This means that these columns should only be written the first time an observation is reported (i.e. first record of a gear, first record of a species).
+
+NB: in case of subsamples, refer to the dedicated section
+
+![Figure 6: example of compilation for shellfishes species](C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/other/benthos_1.png){width="1200" height="50" style="display: block; margin: 0 auto"}
+### Subsamples
+
+Subsamples are taken when the amount of individuals in a given species is too high to be processed. Considering the onboard practice used in the solemon survey there are three cases of subsamples happening. Figure 7 reports the steps that are done according to the three cases. Each case is treated differently depending on the type of species, and the data treatment is explained in the dedicated sections. Two cases were created for the discard subsample which will be discussed later in a separate section.
+
+In terms of onboard procedure, the cases general refers to:
+
+-   Case 1 (C1): ALL the individuals from a haul are collected (sorted sample), then the sorted sample is subsampled and processed
+-   Case 2 (C2): an unsorted subsample is taken from the haul, then it is sorted and ALL the individuals from the sorted subsample are processed
+-   Case 3 (C3): a partially sorted subsample (e.g.: the subsample is taken after commercial species are sorted out, same procedure used for the discard subsample) is taken from the haul, then it is sorted and ALL the individuals from the sorted subsample are processed
+-   Case 4 (C4): it applies for those shellfish coming in huge quantity (MUREBRA, HEXATRU). The subsampling happens in multiple steps (refer to dedicated section)
+-   Case Discard: we have two cases that are treated separately from the others.
+
+
+![Figure 7: type of subsamples](C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/other/subsample_general.png){width="900" height="900" style="display: block; margin: 0 auto"}
+
+### Target species
+
+A typical case for subsample of target species is AEQUOPE, which usually occurs in large quantities and LFD is needed. In this case only a few individuals are measured to obtain the length structure, then it is needed to estimate total number (and sometimes total weight). Individuals that are processed for length and weight can be treated as any other target species. Regarding the other information needed to raise the values, you need to create a new record for the species (and gear) to store subsample data. There are two expected cases:
+
+#### **Case 1 (C1_species) - Target species**
+
+ALL individuals collected from the haul (sorted sample), then a subsample is taken (sorted subsample) for individual processing. One record is dedicated to the subsample details. The total weight of the sorted sample (in kilograms) is reported in the in the *kg_field1* field. The weight of the sorted subsample is reported in the *kg_field2*. *type_subsample* is "C1_species". The individuals subsampled are processed according to the standard procedure for target species, creating a new record for each specimen.
+
+![Figure 8: subsamples, case 1 for target species](C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/other/target_sub1.png){width="900" height="400" style="display: block; margin: 0 auto"}
+
+<br> <br>
+
+#### **Case 2 (C2_haul) - Target species**
+
+A subsample is taken from the haul as soon as it is taken (unsorted subsample, before removing anything from the haul), then ALL the individuals in the subsample are collected (sorted subsample) for individual processing. One record is dedicated to the subsample details. The weight of the haul is reported in *haul_weight*. The weigth of the unsorted subsample is reported in *kg_field1*. The weight of the sorted subsample is reported in *kg_field2*. *type_subsample* is "C2_haul". The individuals subsampled are processed according to the standard procedure for target species, creating a new record for each specimen.
+
+![Figure 9: subsamples, case 2 for target species](C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/other/target_sub2.png){width="900" height="400" style="display: block; margin: 0 auto"}
+
+<br> <br>
+
+#### **Case 3 (C3_benthos) - Target species**
+
+A subsample is taken from the haul after partial sorting (partially sorted subsample). This procedure is tipically applied to benthos subsample, which is taken after commercial species and litter are removed. Therefore, subsamples taken with this procedure need to be raised using the standard procedure to raise discard data. Then, ALL the individuals in the subsample are collected (sorted subsample) for individual processing. One record is dedicated to the subsample details. The weight of the haul is reported in *haul_weight*. The weigth of the unsorted subsample is reported in *kg_field1*. The weight of the sorted subsample is reported in *kg_field2*. *type_subsample* is "C3_benthos". The individuals subsampled are processed according to the standard procedure for target species, creating a new record for each specimen.
+
+![Figure 10: subsamples, case 3 for target species](C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/other/target_sub3.png){width="900" height="400" style="display: block; margin: 0 auto"}
+
+<br> <br>
+
+### Non-target species (MUREBRA, HEXATRU, etc..)
+
+A typical case for subsample of non-target species is MUREBRA. When it occurrs in large aggregations, total number (and sometimes total weight) are estimated from subsamples. To store information needed to raise the values, there are two expected cases:
+
+<br>
+
+#### **Case 1 (C1_species) - Non target**
+
+ALL individuals collected from the haul (sorted sample), then a subsample is taken (sorted subsample) for estimating total number. One record is dedicated to the subsample details. The total weight of the sorted sample (in kilograms) is reported in the in the *kg_field1* field. The weight of the sorted subsample is reported in the *kg_field2*. The number of individual in the sorted subsample is reported in the *subsample_number*. *type_subsample* is "C1_species".
+
+![Figure 11: subsamples, case 1 for non target species](C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/other/nontarget_sub1.png){width="900" height="400" style="display: block; margin: 0 auto"}
+
+<br> <br>
+
+#### **Case 2 (C2_haul) - Non target**
+
+A subsample is taken from the haul as soon as it is taken (unsorted subsample, before removing anything from the haul), then ALL the individuals in the subsample are collected (sorted subsample) for estimating total number. One record is dedicated to the subsample details. The weight of the haul is reported in *haul_weight*. The weigth of the unsorted subsample is reported in *kg_field1*. The weight of the sorted subsample is reported in *kg_field2*. The number of individual in the sorted subsample is reported in the *subsample_number*. *type_subsample* is "C2_haul".
+
+![Figure 12: subsamples, case 2 for non target species](C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/other/nontarget_sub2.png){width="900" height="400" style="display: block; margin: 0 auto"}
+
+<br> <br>
+
+#### **Case 3 (C3_benthos) - Non target**
+
+A subsample is taken from the haul after partial sorting (partially sorted subsample). This procedure is tipically applied to benthos subsample, which is taken after commercial species and litter are removed. Therefore, subsamples taken with this procedure need to be raised using the standard procedure to raise discard data. Then, ALL the individuals in the subsample are collected (sorted subsample) for individual processing. One record is dedicated to the subsample details. The weight of the haul is reported in *haul_weight*. The weigth of the unsorted subsample is reported in *kg_field1*. The weight of the sorted subsample is reported in *kg_field2*. The number of individual in the sorted subsample is reported in the *subsample_number*. *type_subsample* is "C3_benthos".
+
+![Figure 13: subsamples, case 3 for non target](C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/other/nontarget_sub3.png){width="900" height="400" style="display: block; margin: 0 auto"}
+
+<br> <br>
+
+#### **Case 4 (C4_multiple) - Non target**
+
+it has been only used for MUREBRA and HEXATRU in cases of exceptional catches. ALL individuals of these two species are collected from the haul (partially sorted sample), then a subsample is taken from the partially sorted sample (partially sorted subsample). The partially sorted subsample is sorted, aka it is divede into species (sorted subsample). The sorted subsample of each species is subsampled againg (sorted sub subsample) for estimating total number. One record is dedicated to the subsample details. The weight of the partially sorted sample is reported in *kg_field1*. The weigth of the sorted subsample for each species is reported in *kg_field2*. The weight of the sorted sub-subsample is reported in *kg_field3*. The number of individual in the sorted sub-subsample is reported in the *subsample_number*. *type_subsample* is "multi".
+
+![Figure 14: subsamples, case 4 for non target](C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/other/nontarget_sub_mult.png){width="900" height="400" style="display: block; margin: 0 auto"}
+
+<br> <br>
+
+###  **Discard subsample**
+It is a way to help the benthos data collection in lab and avoid possible misspecification that can happen in doing proportion by hand. The proportion are automatically computed in post processing if the access benthos is filled correctly.
+
+
+#### **Benthos 1 - typical situation**
+All individuals of the species (e.s:ANADTRA) are collected from the benthos subsample (the benthos bag) and weighed. Then a sub-sample (50/100 individuals) of species is weighed and counted (Es: Ophiura). The sample weight of all individuals of the species is entered in *weight_g*, the number of individuals of species taken for the subsample is entered in *subsample_numbers* and the subsample weight of species is entered in *kg_field3*;
+
+![Figure 15: Discard subsample, case Ophiura](C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/other/ophiura.jpg)
+
+#### **Benthos 2 - TURRITELLA**
+
+All individuals of the species are collected from the benthos subsample (the benthos bag) and weighed.  Then a sub-sample of 50/100 individuals is taken and weighed. The shells of these individuals are broken and divided into three categories: empty shells or shells containing sand (shells) and shells containing a marine organism. This case to be with the species: *Turritella communis*(B) and *Aporrhais pespelecani*(B), in their shells can be *Sipuncula*(A). The sample weight of all collected samples is entered in *kg_field1*, the subsample weight (weight of 50/100 individuals) is entered in *kg_field2*. Once all shells have been broken up and each subsample (e.g. shell, turritella and sipuncula) has been counted and weighed, the subsample weight divided by groups is entered in *kg_field1* and the number in *subsample_numbers*. Different records must be created for the different species we find by entering each information in each record (Subsample_numbers, Kg_field1, Kg_field2, Kg_field3);
+
+![Figure 16: Discard subsample, case Turritella](C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/other/turritella_bb.png)
+
+<br> <br>
+
+# Processing data
+
+Data are processed in R. It is good practice to process the data relatively frequently in order to create backup files and to produce some checks that can be used to adjust data.
+
+## process haul data
+
+Data stored in the .accdb file are retrieved and handled by R scripts, located in the "R" folder. The required script is `workflow_access_v2024.R`.
+
+### process single hauls
+
+To process single hauls, run the lines up to 15 and then please set the following parameters:
+
+-   **haul**: number of the haul corresponding to the name given in the access file, but without the extension ''. Example: 'cala22' in access is '22' here, 'cala45bis' is '45bis'
+-   **db**: suffix given to the acces file. E.g.: if access file name is *'Maschera inserimento SOLEMON_test.accdb'*, type just *'test'* here.
+-   **updateID**: this control if update ('Y') or not ('N') the serial number 'fishID'. Recommended to type 'Y' only when batch processing all the hauls.
+-   **area_sepia**: old command
+-   **year**: year of the survey
+-   **area**: stratum of the haul
+
+```         
+# set parameters
+haul=22 
+db='test'
+updateID='N'
+area_sepia='D'
+year=2022
+area='ITA17'
+```
+
+\
+
+When parameters are set, the data processing is pre-defined: you just have to run it without changing the parameters. The first step is the `function1`, which scope is to format the access table according to output standards. There is no need to see the output of this function. Just run it.
+
+```         
+# function1 extract data from access db and format them
+hauldata=function1(haul=haul, 
+                   db=db,
+                   year=year)# extract and format data
+```
+
+\
+
+When the function1 is done, you can proceed with the `function2`, which scope is to perform some checks. Checks done are plots that would be saved under the path 'output/checks'
+
+```         
+# function 2: perform checks
+function2(xdat=hauldata, 
+          haul=haul)
+```
+
+\
+
+`function3` scope is to format data according to trust format. Excel sheets are saved under the path 'output/trust'.
+
+```         
+# function 3: format data to trust format
+trustdat=function3(xdat=hauldata[[1]], 
+                  haul=haul, 
+                  year = year, 
+                  weight_not_target = hauldata[[2]],  
+                  subsamples_target=hauldata[[3]],
+                  catch_sample_disattivati = catch_sample_disattivati) # function 2
+                  
+                  
+```
+
+\
+
+`function4` creates a pdf report and save it under the path 'output/pdf'.
+
+```         
+# function4: save PDF
+function4(trustdat = trustdat, 
+          year=year,
+          area = area,
+          haul=haul)
+```
+
+### loop to process more hauls
+
+To process more than one haul, you should care to properly fill in the 'haul_order' excel sheet (see input data section). After having loaded the haul summary, just run the loop represented below.
+
+```         
+haul_summary=read_excel("data/haul_order.xlsx")
+haul_summary=haul_summary[1:5,]
+
+for(xhaul in 1:nrow(haul_summary)){
+  
+  
+  # loop parameters
+  haul=haul_summary[xhaul,]$haul
+  db=haul_summary[xhaul,]$DB
+  area=haul_summary[xhaul,]$country
+  
+  cat('processing haul no.', haul, '(', xhaul,'/', nrow(haul_summary),')' )
+  
+  # function1 extract data from access db and format them
+  hauldata=function1(haul=haul, 
+                     db=db,
+                     year=year)# extract and format data
+  
+  # function 2: perform checks
+  function2(xdat=hauldata, 
+            haul=haul)
+  
+  # function 3: format data to trust format
+  trustdat=function3(xdat=hauldata[[1]], 
+                     haul=haul, 
+                     year = year, 
+                     weight_not_target = hauldata[[2]],  
+                     subsamples_target=hauldata[[3]],
+                     catch_sample_disattivati = catch_sample_disattivati) # function 2
+  
+  # function4: save PDF
+  function4(trustdat = trustdat, 
+            year=year,
+            area=area,
+            haul=haul)
+
+
+}
+```
+
+# Data files associated to the folder
+
+### target_species
+
+Contains the species that are target for the survey (individual length and weight) and the molluscs for which only total weight and total number are needed.
+
+-   **Species**: species solemon code
+-   **target**: indicates which type of target is the species. 1 is for species that requires individual length and weight; 2 is for molluscs that requires total weight and total number
+
+\
+\
+
+```{r, echo=FALSE, warning=F}
+xdat=read_excel("C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/species_list.xlsx")
+xdat2=read_excel("C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/target_species.xlsx")
+names(xdat)[2]='species_name'
+xdat=xdat[,1:2]
+xdat=xdat%>%
+  right_join(xdat2, by='species_name')%>%
+  arrange(target)
+names(xdat)[2]='Species_code'
+xdat%>%kbl(caption = "List of target species. Target = 1 are proper target; Target = 2 are shellfishes on which to collect number and weight")%>%kable_styling()
+
+```
+
+
+\
+\
+
+### fishID
+
+Store the *updated* serial number used to identify specimens for which detailed samples (otolit, genetic etc.) were taken. This number should refere to the *last* ID assigned to a specimen. The use of this file is controlled by the `updateID` parameter in the workflow_access_v0 file: if `updateID` is set equal to Y, the fishID file is used to assign IDs (when requested) and it is then updated. The columns refers to:
+
+-   **type**: not useful (to be removed)
+-   **code**: this is the alphanumeric part of the code to be assigned to specimens
+-   **fishID**: serial number referring to the *last* individual contained in the past records
+-   **haul**: not useful (to be removed)
+-   **species**: indicates which species belong to the code category. If need to add species, use : as separator and do not insert spaces.
+
+\
+\
+
+```{r, echo=FALSE}
+xdat=read_excel("C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/fishID.xlsx")
+xdat[1:3,]%>%kbl(caption = "Example of the fishID file structure")%>%kable_styling()
+
+```
+
+\
+\
+
+### haul_order
+
+Store the information associated with hauls. This file is used (1) when the data workflow is applied in loop; (2) by the minilog script. The columns refers to:
+
+-   **day**: day of the haul (yyyy-mm-dd)
+-   **haul**: number of the haul as from solemon protocol
+-   **id**: progressive number of the haul
+-   **note**: this space serve to write any kind of note, it is ignored by the code
+-   **inizio**: time of setting the net (hh:mm:ss)
+-   **fine**: time of hauling the net (hh:mm:ss)
+-   **verifica_shell**: this space serve to write additional notes, it is ignored by the code
+-   **DB**: indicates the name of the access database where the haul was recorder. Do not include '.accdb' extension.
+-   **country**: indicates in which stratum the haul was performed. Available strata are 'HRV', 'ITA17', 'SVN'
+
+\
+\
+
+```{r, echo=FALSE}
+xdat=read_excel("C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/haul_order.xlsx")
+xdat[1:3,]%>%kbl(caption = "Example of the haul_order file structure")%>%kable_styling()
+
+```
+
+\
+\
+
+### lw_pars
+
+Store the length-weigth parameters of target species. This file is used to reconstruct length (or weight) when it is not available in the recorded data. Example: shrimps where missi a part of the tail but have the head intact are suitable only for length measurement; fishes that were spoiled by the gear may be ok for weight but not measurables for length. The columns refers to:
+
+-   **species_name**: indicates which species belong to the code category (solemon code)
+-   **sex**: indicates the sex in case when sexual dimorphism in the growth is relevant. If dimorphism is not relevant, put combined parameter and write NA in this field
+-   **a**: parameter "a" for the length-weight relationship
+-   **b**: parameter "b" for the length-weight relationship
+-   **source**: source from where a and b were retrieved
+
+\
+\
+
+```{r, echo=FALSE}
+xdat=read_excel("C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/lw_pars.xlsx")
+xdat[1:3,]%>%kbl(caption = "Example of the lw_pars file structure")%>%kable_styling()
+
+```
+
+\
+\
+
+### maturity_stages
+
+Store the code of the maturity scales for target species. This file is used to format input files for trust.
+
+-   **SPECIES**: indicates which species belong to the code category (solemon code)
+-   **SEX**: indicates the sex
+-   **SCALE**: include the alphanumeric part of the maturity scale code
+
+\
+\
+
+```{r, echo=FALSE}
+xdat=read_excel("C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/maturity_stages.xlsx")
+xdat[1:3,]%>%kbl(caption = "Example of the maturity_stages file structure")%>%kable_styling()
+
+```
+
+\
+\
+
+### solemon_TB
+
+This is just the TB file updated to 2021, as stored in trust. It serves to perform some checks and it should not be modified. Preview not shown.
+
+\
+\
+
+### species_list
+
+This file is downloaded from the trust database and not modified. It contains the species list. Last update xxx. If need to modify, please *do it in thrust and then download the excel again!*.
+
+-   **Species**: species scientific name
+-   **Medits**: species solemon code
+-   **Sp_Subcat**: commercial category of the species
+-   **Lan_Class**: not relevant
+-   **Sp_Subcat**: not relevant
+
+\
+\
+
+```{r, echo=FALSE}
+xdat=read_excel("C:/Users/f.luzi/OneDrive - CNR/CNR/SoleMon/Github/SoleMon_project/OnBoard/data/species_list.xlsx")
+xdat[1:3,]%>%kbl(caption = "Example of the species_list file structure")%>%kable_styling()
+
+```
+
+\
+\
